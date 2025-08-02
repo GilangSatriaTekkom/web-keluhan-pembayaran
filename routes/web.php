@@ -38,10 +38,6 @@ Route::get('/', function(){
     return redirect('sign-in');
 });
 
-Route::get('/test', function() {
-    return view('livewire.auth.login'); // Buat file view sederhana
-});
-
 Route::get('forgot-password', ForgotPassword::class)->middleware('guest')->name('password.forgot');
 Route::get('reset-password/{id}', ResetPassword::class)->middleware('signed')->name('reset-password');
 

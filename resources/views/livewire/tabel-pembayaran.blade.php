@@ -121,10 +121,7 @@
                                                         <a href="#" class="text-secondary font-weight-bold text-xs">Lihat Detail</a>
                                                     </td>
                                                 </tr>
-                                            @else
-                                            <tr>
-                                                <td colspan="6" class="text-center">Tidak ada Riwayat Tagihan</td>
-                                            </tr>
+
                                             @endif
                                         @endforeach
                                     @endif

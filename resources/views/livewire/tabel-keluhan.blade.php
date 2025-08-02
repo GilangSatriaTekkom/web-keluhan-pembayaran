@@ -95,10 +95,7 @@
                                                         </a>
                                                     </td>
                                                 </tr>
-                                                @else
-                                                <tr>
-                                                    <td colspan="6" class="text-center">Tidak ada keluhan aktif</td>
-                                                </tr>
+
                                                 @endif
 
                                             @endforeach
@@ -174,10 +171,7 @@
                                                         </a>
                                                     </td>
                                                 </tr>
-                                                @else
-                                                <tr>
-                                                    <td colspan="6" class="text-center">Tidak ada Riwayat Keluhan</td>
-                                                </tr>
+
                                                 @endif
 
                                             @endforeach
