@@ -3,12 +3,12 @@
         <div class="col-12">
             <div class="card my-4">
                 <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-                    <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
                         <h6 class="text-white mx-3"><strong>Data Pelanggan</strong></h6>
+                        <div class="me-3 my-3 text-end">
+                            <livewire:components.button-form />
+                        </div>
                     </div>
-                </div>
-                <div class="me-3 my-3 text-end">
-                    <livewire:components.button-form />
                 </div>
                 <div class="card-body px-0 pb-2">
                     <div class="table-responsive p-0">
@@ -37,7 +37,8 @@
                             </thead>
                             <tbody>
                                 @forelse ($pelanggans as $pelanggan)
-                                    <tr>
+
+                                    <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
                                         <td class="px-3">
                                             <p class="text-sm mb-0">{{ $pelanggan->id }}</p>
                                         </td>
@@ -76,6 +77,7 @@
                                             </form>
                                         </td>
                                     </tr>
+
                                 @empty
                                     <tr>
                                         <td colspan="6" class="text-center py-4">

@@ -66,6 +66,12 @@
     <!-- CSS Files -->
     <link id="pagestyle" href="{{ asset('assets') }}/css/material-dashboard.css?v=3.0.0" rel="stylesheet" />
     @livewireStyles
+
+    <style>
+        .data-hover:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
 </head>
 
 <body

@@ -12,9 +12,9 @@
                                 <h6 class="text-white col text-capitalize ps-3">Keluhan Aktif</h6>
                                 <div class="col text-end">
                                      <!-- Button trigger modal -->
-                                    <button type="button" class="btn bg-gradient-info" data-bs-toggle="modal" data-bs-target="#keluhanModal">
+                                    <a href="{{ route('tabel-keluhan.tambah') }}" class="btn bg-gradient-info">
                                         Buat Keluhan
-                                    </button>
+                                    </a>
                                 </div>
 
                             </div>
@@ -39,10 +39,6 @@
                                             <th
                                                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                                 Status</th>
-
-                                            <th
-                                                class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -53,51 +49,26 @@
                                         @else
                                             @foreach($tiket as $t)
                                                 @if($t->status !== 'Selesai')
-                                                <tr>
-                                                    <td>
-                                                        <div class="my-auto">
-                                                            <h6 class="mb-0 text-sm">TK{{ $t->id }}</h6>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <p class="text-sm font-weight-bold mb-0">{{ $t->user->name }}</p>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <span class="text-xs font-weight-bold">{{ $t->category }}</span>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <span class="text-sm font-weight-bold mb-0">{{ formatTanggalIndonesia($t->created_at) }}</span>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <span class="badge badge-sm bg-gradient-success">{{ $t->status }}</span>
-                                                    </td>
-
-                                                    <td class="align-middle text-center">
-
-                                                    @if($users->role === 'admin')
-                                                        <a href="javascript:;"
-                                                            class="text-secondary font-weight-bold text-xs"
-                                                            data-toggle="tooltip" data-original-title="Edit user">
-                                                            Edit
-                                                        </a>
-                                                        <a href="javascript:;"
-                                                            class="text-secondary font-weight-bold text-xs"
-                                                            data-toggle="tooltip" data-original-title="Edit user">
-                                                            Selesaikan
-                                                        </a>
-
-                                                    @endif
-
-                                                        <a href="javascript:;"
-                                                            class="text-secondary font-weight-bold text-xs"
-                                                            data-toggle="tooltip" data-original-title="Edit user">
-                                                            Lihat Detail
-                                                        </a>
-                                                    </td>
-                                                </tr>
-
+                                                    <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
+                                                        <td>
+                                                            <div class="my-auto">
+                                                                <h6 class="mb-0 text-sm">TK{{ $t->id }}</h6>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <p class="text-sm font-weight-bold mb-0">{{ $t->user->name }}</p>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <span class="text-xs font-weight-bold">{{ $t->category }}</span>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <span class="text-sm font-weight-bold mb-0">{{ formatTanggalIndonesia($t->created_at) }}</span>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <span class="badge badge-sm bg-gradient-success">{{ $t->status }}</span>
+                                                        </td>
+                                                    </tr>
                                                 @endif
-
                                             @endforeach
                                         @endif
                                     </tbody>
@@ -148,32 +119,30 @@
                                         @else
                                             @foreach($tiket as $t)
                                                 @if($t->status === 'Selesai')
-                                                <tr>
-                                                    <td>
-                                                        <div class="my-auto">
-                                                            <h6 class="mb-0 text-sm">TK{{ $t->id }}</h6>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <p class="text-sm font-weight-bold mb-0">{{ $t->user->name }}</p>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <span class="text-xs font-weight-bold">{{ $t->category }}</span>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <span class="badge badge-sm bg-gradient-success">{{ $t->status }}</span>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <a href="javascript:;"
-                                                            class="text-secondary font-weight-bold text-xs"
-                                                            data-toggle="tooltip" data-original-title="Edit user">
-                                                            Lihat Detail
-                                                        </a>
-                                                    </td>
-                                                </tr>
-
+                                                    <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
+                                                        <td>
+                                                            <div class="my-auto">
+                                                                <h6 class="mb-0 text-sm">TK{{ $t->id }}</h6>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <p class="text-sm font-weight-bold mb-0">{{ $t->user->name }}</p>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <span class="text-xs font-weight-bold">{{ $t->category }}</span>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <span class="badge badge-sm bg-gradient-success">{{ $t->status }}</span>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <a href="javascript:;"
+                                                                class="text-secondary font-weight-bold text-xs"
+                                                                data-toggle="tooltip" data-original-title="Edit user">
+                                                                Lihat Detail
+                                                            </a>
+                                                        </td>
+                                                    </tr>
                                                 @endif
-
                                             @endforeach
                                         @endif
                                     </tbody>

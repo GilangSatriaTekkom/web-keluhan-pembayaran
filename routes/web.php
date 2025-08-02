@@ -21,6 +21,9 @@ use App\Http\Livewire\TabelPembayaran;
 use App\Http\Livewire\Karyawan;
 use App\Http\Livewire\Pelanggan;
 use App\Http\Livewire\TambahUsers;
+use App\Http\Livewire\Create\Karyawan as KaryawanTambah;
+use App\Http\Livewire\Create\Pelanggan as PelangganTambah;
+use App\Http\Livewire\Create\Keluhan as KeluhanTambah;
 use GuzzleHttp\Middleware;
 
 /*
@@ -68,13 +71,18 @@ Route::group(['middleware' => 'auth'], function () {
 
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
      Route::get('pelanggan', Pelanggan::class)->name('pelanggan');
-    Route::post('pelanggan/add', TambahUsers::class)->name('tambah-users');
+    Route::post('pelanggan/tambah', TambahUsers::class)->name('pelanggan.tambah');
     Route::put('pelanggan/update/{id}', [Pelanggan::class, 'edit'])->name('pelanggan.edit');
     Route::delete('pelanggan/destroy/{id}', [Pelanggan::class, 'destroy'])->name('pelanggan.destroy');
 
     Route::get('karyawan', Karyawan::class)->name('karyawan');
-    Route::post('karyawan/add', TambahUsers::class)->name('tambah-users');
+    Route::get('karyawan/tambah', KaryawanTambah::class)->name('karyawan.tambah');
+    Route::post('karyawan/add', Karyawan::class)->name('karyawan.add');
     Route::put('karyawan/update/{id}', [Karyawan::class, 'edit'])->name('karyawan.edit');
     Route::delete('karyawan/destroy/{id}', [Karyawan::class, 'destroy'])->name('karyawan.destroy');
+
+     Route::post('tabel-keluhan/tambah', KeluhanTambah::class)->name('tabel-keluhan.tambah');
+    Route::put('tabel-keluhan/update/{id}', [Pelanggan::class, 'edit'])->name('tabel-keluhan.edit');
+    Route::delete('tabel-keluhan/destroy/{id}', [Pelanggan::class, 'destroy'])->name('tabel-keluhan.destroy');
 
 });

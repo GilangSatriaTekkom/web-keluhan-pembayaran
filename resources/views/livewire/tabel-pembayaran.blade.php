@@ -44,7 +44,7 @@
                                     @else
                                         @foreach($tagihans as $tagihan)
                                             @if($tagihan->status !== 'Lunas')
-                                                <tr>
+                                                <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
                                                     <td>TGHN{{ $tagihan->id }}</td>
                                                     <td>{{ formatTanggalIndonesia($tagihan->periode_tagihan) }}</td>
                                                     <td class="text-center">{{ formatTanggalIndonesia($tagihan->created_at) }}</td>
@@ -109,7 +109,7 @@
                                     @else
                                         @foreach($tagihans as $tagihan)
                                             @if($tagihan->status === 'Lunas')
-                                                <tr>
+                                            <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
                                                     <td>{{ $tagihan->id }}</td>
                                                     <td>{{ formatTanggalIndonesia($tagihan->periode_tagihan) }}</td>
                                                     <td class="text-center">{{ formatTanggalIndonesia($tagihan->created_at) }}</td>

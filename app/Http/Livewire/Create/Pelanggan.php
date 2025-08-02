@@ -1,21 +1,11 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Http\Livewire\Create;
 
 use Livewire\Component;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
-class Karyawan extends Component
+class Pelanggan extends Component
 {
-
-    public $userId;
-
-    public function mount() {
-        $this->userId = Auth::id();
-    }
-
-
     public $user = [
         'name' => '',
         'email' => '',
@@ -61,18 +51,8 @@ class Karyawan extends Component
         $this->reset('user');
     }
 
-
     public function render()
     {
-        $userId = Auth::id();
-        if (!$userId && !Auth::user()->isAdmin()) {
-            return redirect()->route('login');
-        }
-
-
-        return view('livewire.karyawan',
-        [
-            'karyawans' => User::where('role', 'admin')->get(),
-        ]);
+        return view('livewire.create.pelanggan');
     }
 }
