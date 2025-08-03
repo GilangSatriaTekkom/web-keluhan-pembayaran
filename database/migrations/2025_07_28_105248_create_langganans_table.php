@@ -16,8 +16,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('paket_id')->constrained('paket_internets')->onDelete('cascade');
             $table->string('status_langganan');
-            $table->date('tanggal_mulai');
-            $table->date('tanggal_berakhir');
             $table->timestamps();
         });
     }

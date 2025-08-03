@@ -23,13 +23,14 @@ class Login extends Component
     }
 
     public function mount() {
-      
-        $this->fill(['email' => 'admin@material.com', 'password' => 'secret']);    
+
+        $this->fill(['email' => 'admin@material.com', 'password' => 'secret']);
     }
-    
+
     public function store()
     {
         $attributes = $this->validate();
+        \Log::debug("message", $attributes);
 
         if (! auth()->attempt($attributes)) {
             throw ValidationException::withMessages([

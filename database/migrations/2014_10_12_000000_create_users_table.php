@@ -24,7 +24,6 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->string('role');
             $table->string('status');
-            $table->date('tgl_daftar');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -15,3 +15,14 @@ if (!function_exists('formatTanggalIndonesia')) {
         return Carbon::parse($tanggal)->translatedFormat('d F Y');
     }
 }
+
+if (!function_exists('alert')) {
+    function alert($title, $message = '', $type = 'success')
+    {
+        session()->flash('alert', [
+            'title' => $title,
+            'message' => $message,
+            'type' => $type
+        ]);
+    }
+}

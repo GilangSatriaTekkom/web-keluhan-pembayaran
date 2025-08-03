@@ -19,11 +19,12 @@
                                         <p class="mb-0">Enter your name, email and password to register</p>
                                     </div>
                                     <div class="card-body">
+
                                         <form wire:submit ="store">
 
                                             <div class="input-group input-group-outline @if(strlen($name?? '') > 0) is-filled @endif">
                                                 <label class="form-label">Name</label>
-                                                <input wire:model.live="name" type="text" class="form-control" 
+                                                <input wire:model.live="name" type="text" class="form-control"
                                                 >
                                             </div>
                                             @error('name')
@@ -41,19 +42,30 @@
 
                                             <div class="input-group input-group-outline mt-3 @if(strlen($password ?? '') > 0) is-filled @endif">
                                                 <label class="form-label">Password</label>
-                                                <input wire:model.live="password" type="password" class="form-control" >
+                                                <input wire:model.live="password" name="password" type="password" class="form-control" >
                                             </div>
                                             @error('password')
                                             <p class='text-danger inputerror'>{{ $message }} </p>
                                             @enderror
-                                            <div class="form-check form-check-info text-start ps-0 mt-3">
+
+                                            <!-- Confirm Password Field (BARU) -->
+                                            <div class="input-group input-group-outline mt-3 @if(strlen($password_confirmation ?? '') > 0) is-filled @endif">
+                                                <label class="form-label">Confirm Password</label>
+                                                <input wire:model.live="password_confirmation" name="password_confirmation" type="password" class="form-control">
+                                            </div>
+                                            @error('password_confirmation')
+                                                <p class='text-danger inputerror'>{{ $message }} </p>
+                                            @enderror
+
+
+                                            {{-- <div class="form-check form-check-info text-start ps-0 mt-3">
                                                 <input class="form-check-input" type="checkbox" value=""
                                                     id="flexCheckDefault" checked>
                                                 <label class="form-check-label" for="flexCheckDefault">
                                                     I agree the <a href="javascript:;"
                                                         class="text-dark font-weight-bolder">Terms and Conditions</a>
                                                 </label>
-                                            </div>
+                                            </div> --}}
                                             <div class="text-center">
                                                 <button type="submit"
                                                     class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0">Sign
@@ -75,3 +87,43 @@
                 </div>
             </section>
         </main>
+
+        <script>
+        document.addEventListener('livewire:init', function() {
+            Livewire.on('passwordUpdated', () => {
+                const password = document.querySelector('input[name="password"]');
+                const confirm = document.querySelector('input[name="password_confirmation"]');
+
+                if(password.value !== confirm.value) {
+                    confirm.setCustomValidity("Passwords don't match");
+                } else {
+                    confirm.setCustomValidity('');
+                }
+            });
+        });
+        </script>
+
+        @push('scripts')
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('showSweetAlert', (params) => {
+                Swal.fire({
+                    icon: params.type,
+                    title: params.title,
+                    text: params.text,
+                    confirmButtonText: params.confirmButtonText || 'OK',
+                    timer: params.timer,
+                    position: 'center',
+                    showConfirmButton: params.timer ? false : true
+                });
+
+                // Jika ada redirect setelah alert
+                if(params.redirect) {
+                    setTimeout(() => {
+                        window.location.href = params.redirect;
+                    }, params.timer || 2000);
+                }
+            });
+        });
+    </script>
+    @endpush

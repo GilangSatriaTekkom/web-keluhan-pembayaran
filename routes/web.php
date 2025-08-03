@@ -58,10 +58,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('profile', Profile::class)->name('profile');
     Route::get('tables', Tables::class)->name('tables');
     Route::get('notifications', Notifications::class)->name("notifications");
-    Route::get('virtual-reality', VirtualReality::class)->name('virtual-reality');
     Route::get('static-sign-in', StaticSignIn::class)->name('static-sign-in');
     Route::get('static-sign-up', StaticSignUp::class)->name('static-sign-up');
-    Route::get('rtl', RTL::class)->name('rtl');
 
     Route::get('tabel-keluhan', TabelKeluhan::class)->name('tabel-keluhan.index');
     Route::get('tabel-pembayaran', TabelPembayaran::class)->name('tabel-pembayaran.index');
@@ -71,7 +69,8 @@ Route::group(['middleware' => 'auth'], function () {
 
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
      Route::get('pelanggan', Pelanggan::class)->name('pelanggan');
-    Route::post('pelanggan/tambah', TambahUsers::class)->name('pelanggan.tambah');
+    Route::get('pelanggan/tambah', PelangganTambah::class)->name('pelanggan.tambah');
+    Route::post('karyawan/add', Karyawan::class)->name('karyawan.add');
     Route::put('pelanggan/update/{id}', [Pelanggan::class, 'edit'])->name('pelanggan.edit');
     Route::delete('pelanggan/destroy/{id}', [Pelanggan::class, 'destroy'])->name('pelanggan.destroy');
 
@@ -81,7 +80,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::put('karyawan/update/{id}', [Karyawan::class, 'edit'])->name('karyawan.edit');
     Route::delete('karyawan/destroy/{id}', [Karyawan::class, 'destroy'])->name('karyawan.destroy');
 
-     Route::post('tabel-keluhan/tambah', KeluhanTambah::class)->name('tabel-keluhan.tambah');
+     Route::get('tabel-keluhan/tambah', KeluhanTambah::class)->name('tabel-keluhan.tambah');
     Route::put('tabel-keluhan/update/{id}', [Pelanggan::class, 'edit'])->name('tabel-keluhan.edit');
     Route::delete('tabel-keluhan/destroy/{id}', [Pelanggan::class, 'destroy'])->name('tabel-keluhan.destroy');
 

@@ -65,6 +65,9 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <!-- CSS Files -->
     <link id="pagestyle" href="{{ asset('assets') }}/css/material-dashboard.css?v=3.0.0" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     @livewireStyles
 
     <style>
@@ -76,7 +79,6 @@
 
 <body
     class="g-sidenav-show {{ Route::currentRouteName() == 'rtl' ? 'rtl' : '' }} {{ Route::currentRouteName() == 'register' || Route::currentRouteName() == 'static-sign-up' ? '' : 'bg-gray-200' }}">
-
     {{ $slot }}
 
     <script src="{{ asset('assets') }}/js/core/popper.min.js"></script>
@@ -97,6 +99,20 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
     <script src="{{ asset('assets') }}/js/material-dashboard.min.js?v=3.0.0"></script>
+
+     @if(session()->has('alert'))
+        <script>
+            Swal.fire({
+                title: '{{ session('alert')['title'] }}',
+                text: '{{ session('alert')['message'] }}',
+                icon: '{{ session('alert')['type'] }}',
+                position: 'center',
+                showConfirmButton: true,
+                timer: 5000
+            });
+        </script>
+    @endif
+
     @livewireScripts
 </body>
 

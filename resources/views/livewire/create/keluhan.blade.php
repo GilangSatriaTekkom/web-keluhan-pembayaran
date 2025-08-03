@@ -13,9 +13,9 @@
             </div>
         @endif
 
-        <form wire:submit.prevent="submit">
+        <form wire:submit.prevent="alert">
             <div class="row">
-                <div class="mb-3 col-md-6">
+                {{-- <div class="mb-3">
                     <label class="form-label">Kategori Keluhan</label>
                     <select wire:model.defer="tiket.category" class="form-control border border-2 p-2">
                         <option value="">Pilih Kategori</option>
@@ -24,9 +24,14 @@
                         <option value="Layanan">Layanan</option>
                     </select>
                     @error('tiket.category') <small class="text-danger">{{ $message }}</small> @enderror
+                </div> --}}
+                <div class="mb-3">
+                    <label class="form-label">Apa Keluhan Anda ?</label>
+                    <input type="text" wire:model.defer="tiket.category" class="form-control border border-2 p-2" placeholder="Tuliskan keluhan anda...">
+                    @error('tiket.category') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
-                <div class="mb-3 col-md-6">
+                {{-- <div class="mb-3 col-md-6">
                     <label class="form-label">Status</label>
                     <select wire:model.defer="tiket.status" class="form-control border border-2 p-2">
                         <option value="">Pilih Status</option>
@@ -35,12 +40,12 @@
                         <option value="Selesai">Selesai</option>
                     </select>
                     @error('tiket.status') <small class="text-danger">{{ $message }}</small> @enderror
-                </div>
+                </div> --}}
 
                 <div class="mb-3 col-md-12">
-                    <label class="form-label">Deskripsi Keluhan</label>
+                    <label class="form-label">Jelaskan keluhan lebih detail</label>
                     <textarea wire:model.defer="tiket.description" class="form-control border border-2 p-2" rows="4"
-                        placeholder="Jelaskan keluhan Anda..."></textarea>
+                        placeholder="Jelaskan Lebih Rinci..."></textarea>
                     @error('tiket.description') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
             </div>

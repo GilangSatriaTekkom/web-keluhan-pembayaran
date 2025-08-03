@@ -26,7 +26,6 @@ class DatabaseSeeder extends Seeder
             'phone'      => '081234567890',
             'role'       => 'admin',
             'status'     => 'aktif',
-            'tgl_daftar' => now(),
         ]);
 
         // Pelanggan
@@ -39,7 +38,6 @@ class DatabaseSeeder extends Seeder
                 'phone'      => '082112345678',
                 'role'       => 'pelanggan',
                 'status'     => 'aktif',
-                'tgl_daftar' => now(),
             ],
             [
                 'name'       => 'R.A. Kayla Hastuti, M.Pd',
@@ -49,7 +47,6 @@ class DatabaseSeeder extends Seeder
                 'phone'      => '082113456789',
                 'role'       => 'pelanggan',
                 'status'     => 'aktif',
-                'tgl_daftar' => now(),
             ],
         ]);
 
@@ -62,15 +59,11 @@ class DatabaseSeeder extends Seeder
                [
                     'user_id' => 2,
                     'paket_id' => 1,
-                    'tanggal_mulai' => '2020-05-30',
-                    'tanggal_berakhir' => '2025-05-30',
                     'status_langganan' => 'aktif',
                 ],
                 [
                     'user_id' => 3,
                     'paket_id' => 2,
-                    'tanggal_mulai' => '2020-12-08',
-                    'tanggal_berakhir' => '2023-12-08',
                     'status_langganan' => 'nonaktif',
                 ],
 

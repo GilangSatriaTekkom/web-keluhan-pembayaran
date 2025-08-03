@@ -1,6 +1,4 @@
 <div class="container-fluid px-2 px-md-4">
-
-
     <div class="card card-body mx-3 mx-md-4">
         <h4 class="mb-4">Tambah Pelanggan</h4>
 
@@ -14,7 +12,7 @@
             </div>
         @endif
 
-        <form wire:submit.prevent='submit'>
+        <form wire:submit.prevent='confirmSubmit'>
             <div class="row">
                 <div class="mb-3 col-md-6">
                     <label class="form-label">Nama</label>
@@ -28,56 +26,38 @@
                     @error('user.email') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
+                <!-- Langganan Field -->
                 <div class="mb-3 col-md-6">
-                    <label class="form-label">Telepon</label>
+                    <label class="form-label">Paket Internet</label>
+                    <select wire:model.defer="user.paket_internet_id" class="form-control border border-2 p-2">
+                            <option value="">Pilih Paket</option>
+                            @foreach($paketInternetOptions as $paket)
+                                <option value="{{ $paket->id }}">
+                                    {{ $paket->nama_paket }} - {{ $paket->kecepatan }}Mbps (Rp{{ number_format($paket->harga, 0, ',', '.') }})
+                                </option>
+                            @endforeach
+                    </select>
+                    @error('user.paket_internet_id') <small class="text-danger">{{ $message }}</small> @enderror
+                </div>
+
+                <!-- Phone Field (required if langganan) -->
+                <div class="mb-3 col-md-6">
+                    <label class="form-label">No Hp</label>
                     <input wire:model.defer="user.phone" type="text" class="form-control border border-2 p-2">
                     @error('user.phone') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
+                <!-- Location Field (required if langganan) -->
                 <div class="mb-3 col-md-6">
-                    <label class="form-label">Lokasi</label>
+                    <label class="form-label">Alamat</label>
                     <input wire:model.defer="user.location" type="text" class="form-control border border-2 p-2">
                     @error('user.location') <small class="text-danger">{{ $message }}</small> @enderror
-                </div>
-
-                <div class="mb-3 col-md-12">
-                    <label class="form-label">Tentang</label>
-                    <textarea wire:model.defer="user.about" class="form-control border border-2 p-2"
-                        rows="4"></textarea>
-                    @error('user.about') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
                 <div class="mb-3 col-md-6">
                     <label class="form-label">Password</label>
                     <input wire:model.defer="user.password" type="password" class="form-control border border-2 p-2">
                     @error('user.password') <small class="text-danger">{{ $message }}</small> @enderror
-                </div>
-
-                <div class="mb-3 col-md-3">
-                    <label class="form-label">Role</label>
-                    <select wire:model.defer="user.role" class="form-control border border-2 p-2">
-                        <option value="">Pilih Role</option>
-                        <option value="admin">Admin</option>
-                        <option value="user">User</option>
-                        <!-- Tambahkan opsi sesuai kebutuhan -->
-                    </select>
-                    @error('user.role') <small class="text-danger">{{ $message }}</small> @enderror
-                </div>
-
-                <div class="mb-3 col-md-3">
-                    <label class="form-label">Status</label>
-                    <select wire:model.defer="user.status" class="form-control border border-2 p-2">
-                        <option value="">Pilih Status</option>
-                        <option value="aktif">Aktif</option>
-                        <option value="nonaktif">Nonaktif</option>
-                    </select>
-                    @error('user.status') <small class="text-danger">{{ $message }}</small> @enderror
-                </div>
-
-                <div class="mb-3 col-md-6">
-                    <label class="form-label">Tanggal Daftar</label>
-                    <input wire:model.defer="user.tgl_daftar" type="date" class="form-control border border-2 p-2">
-                    @error('user.tgl_daftar') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
             </div>
 
