@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Auth;
 
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use App\Models\User;
 
 class Login extends Component
 {
@@ -30,7 +31,6 @@ class Login extends Component
     public function store()
     {
         $attributes = $this->validate();
-        \Log::debug("message", $attributes);
 
         if (! auth()->attempt($attributes)) {
             throw ValidationException::withMessages([

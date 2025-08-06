@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailTiket extends Model
 {
-   protected $fillable = ['tiket_id', 'langkah', 'isDone'];
+   protected $fillable = ['tiket_id', 'tasks', 'isDone'];
 
     public function tiket(): BelongsTo {
         return $this->belongsTo(Tiket::class);

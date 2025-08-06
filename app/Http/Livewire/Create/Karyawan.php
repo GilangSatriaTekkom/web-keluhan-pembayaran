@@ -3,19 +3,20 @@
 namespace App\Http\Livewire\Create;
 
 use Livewire\Component;
+use App\Models\User;
+use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 
 class Karyawan extends Component
 {
+
     public $user = [
         'name' => '',
         'email' => '',
         'phone' => '',
         'location' => '',
-        'about' => '',
         'password' => '',
-        'role' => '',
-        'status' => '',
-        'tgl_daftar' => '',
+        'role' => 'admin',
+        'status' => 'aktif',
     ];
 
     protected $rules = [
@@ -23,32 +24,65 @@ class Karyawan extends Component
         'user.email' => 'required|email|unique:users,email',
         'user.phone' => 'nullable|string|max:20',
         'user.location' => 'nullable|string|max:255',
-        'user.about' => 'nullable|string',
         'user.password' => 'required|string|min:6',
         'user.role' => 'required|string',
         'user.status' => 'required|string',
-        'user.tgl_daftar' => 'required|date',
     ];
+
+    public function confirmSubmit()
+    {
+
+        LivewireAlert::title('Konfirmasi')
+            ->text('Yakin buat Karyawan?')
+            ->question()
+            ->asConfirm()
+            ->onConfirm('submit')
+            ->onDeny('onDenyHandler')
+            ->show();
+    }
+
+    public function onDenyHandler()
+    {
+        LivewireAlert::title('Informasi')
+            ->text('Pembuatan pelanggan dibatalkan')
+            ->info()
+            ->show();
+    }
 
     public function submit()
     {
-        $this->validate();
+        try {
+            $this->validate();
 
-        User::create([
+       $user = User::create([
             'name' => $this->user['name'],
             'email' => $this->user['email'],
             'phone' => $this->user['phone'],
             'location' => $this->user['location'],
-            'about' => $this->user['about'],
-            'password' => Hash::make($this->user['password']),
+            'password' => $this->user['password'],
             'role' => $this->user['role'],
             'status' => $this->user['status'],
-            'tgl_daftar' => $this->user['tgl_daftar'],
         ]);
 
-        session()->flash('status', 'User berhasil ditambahkan.');
+            LivewireAlert::title('Sukses')
+                ->text('Karyawan berhasil dibuat!')
+                ->success()
+                ->withConfirmButton('OK')
+                ->onConfirm('returnToList')
+                ->show();
 
-        $this->reset('user');
+            $this->reset('user');
+        } catch (\Exception $e) {
+            LivewireAlert::title('Error')
+                ->text('Terjadi kesalahan: ' . $e->getMessage())
+                ->error()
+                ->show();
+        }
+    }
+
+     public function returnToList()
+    {
+        return redirect()->route('karyawan');
     }
 
     public function render()

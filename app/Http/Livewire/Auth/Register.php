@@ -6,6 +6,7 @@ use App\Models\User;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
+use Illuminate\Support\Facades\Hash;
 
 class Register extends Component
 {
@@ -29,15 +30,26 @@ class Register extends Component
 
     public function store()
     {
-         try {
+        //  try {
             $validatedData = $this->validate();
+            \Log::info('Registering user: ', $validatedData);
+
 
             User::create([
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password']),
+                'password' => $validatedData['password'],
                 'role' => $this->role,
                 'status' => $this->status
+            ]);
+
+            \Log::info('User registered successfully: ', ['password' => Hash::make($validatedData['password'])]);
+
+
+             \Log::debug('Login attempt', [
+                'input_password' => $validatedData['password'],
+                'db_password' => User::where('email', $validatedData['email'])->first()->password,
+                'hash_check' => Hash::check($validatedData['password'], User::where('email', $validatedData['email'])->first()->password)
             ]);
 
             LivewireAlert::title('Register Berhasil!')
@@ -47,11 +59,11 @@ class Register extends Component
                 ->onConfirm('returnLogin')
                 ->show();
 
-        } catch (\Exception $e) {
-             LivewireAlert::title('Ada Kesalahan!')
-                ->error()
-                ->show();
-        }
+        // } catch (\Exception $e) {
+        //      LivewireAlert::title('Ada Kesalahan!')
+        //         ->error()
+        //         ->show();
+        // }
     }
 
     public function returnLogin() {

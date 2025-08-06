@@ -25,7 +25,7 @@
                             </thead>
                             <tbody>
                                 @forelse ($karyawans as $karyawan)
-                                    <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
+                                    <tr >
                                         <td class="px-3">
                                             <p class="text-sm mb-0">{{ $karyawan->id }}</p>
                                         </td>

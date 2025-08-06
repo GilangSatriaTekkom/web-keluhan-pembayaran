@@ -39,6 +39,9 @@
                                             <th
                                                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                                 Status</th>
+                                            <th
+                                                class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -48,8 +51,8 @@
                                             </tr>
                                         @else
                                             @foreach($tiket as $t)
-                                                @if($t->status !== 'Selesai')
-                                                    <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
+                                                @if($t->status !== 'selesai')
+                                                    <tr>
                                                         <td>
                                                             <div class="my-auto">
                                                                 <h6 class="mb-0 text-sm">TK{{ $t->id }}</h6>
@@ -66,6 +69,13 @@
                                                         </td>
                                                         <td class="align-middle text-center">
                                                             <span class="badge badge-sm bg-gradient-success">{{ $t->status }}</span>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <a href="{{ route('lihat.keluhan', ['id' => $t->id]) }}"
+                                                                class="btn col btn-info mb-3"
+                                                                data-toggle="tooltip" data-original-title="Edit user">
+                                                                Lihat Detail
+                                                            </a>
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -118,8 +128,8 @@
                                             </tr>
                                         @else
                                             @foreach($tiket as $t)
-                                                @if($t->status === 'Selesai')
-                                                    <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
+                                                @if($t->status === 'selesai')
+                                                    <tr >
                                                         <td>
                                                             <div class="my-auto">
                                                                 <h6 class="mb-0 text-sm">TK{{ $t->id }}</h6>
@@ -135,8 +145,8 @@
                                                             <span class="badge badge-sm bg-gradient-success">{{ $t->status }}</span>
                                                         </td>
                                                         <td class="align-middle text-center">
-                                                            <a href="javascript:;"
-                                                                class="text-secondary font-weight-bold text-xs"
+                                                            <a href="{{ route('lihat.keluhan', ['id' => $t->id]) }}"
+                                                                class="btn col btn-info mb-3"
                                                                 data-toggle="tooltip" data-original-title="Edit user">
                                                                 Lihat Detail
                                                             </a>

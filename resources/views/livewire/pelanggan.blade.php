@@ -38,7 +38,7 @@
                             <tbody>
                                 @forelse ($pelanggans as $pelanggan)
 
-                                    <tr onclick="window.location='test'" style="cursor:pointer"; class="data-hover">
+                                    <tr >
                                         <td class="px-3">
                                             <p class="text-sm mb-0">{{ $pelanggan->id }}</p>
                                         </td>

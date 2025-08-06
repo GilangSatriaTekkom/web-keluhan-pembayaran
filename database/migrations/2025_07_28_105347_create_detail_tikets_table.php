@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('detail_tikets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tiket_id')->constrained('tikets')->onDelete('cascade');
-            $table->string('langkah');
+            $table->json('tasks')->nullable();
             $table->boolean('isDone')->default(false);
             $table->timestamps();
         });

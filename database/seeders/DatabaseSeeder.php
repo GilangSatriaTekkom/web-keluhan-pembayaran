@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name'       => 'Hendri Wibowo',
                 'email'      => 'banawi24@hotmail.com',
-                'password'   => Hash::make('password'),
+                'password'   => ('password'),
                 'location'   => 'Jl. Anggrek No. 7',
                 'phone'      => '082112345678',
                 'role'       => 'pelanggan',
@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name'       => 'R.A. Kayla Hastuti, M.Pd',
                 'email'      => 'ysaptono@yahoo.com',
-                'password'   => Hash::make('password'),
+                'password'   => ('password'),
                 'location'   => 'Jl. Melati No. 10',
                 'phone'      => '082113456789',
                 'role'       => 'pelanggan',
@@ -124,7 +124,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id' => 2,
                 'category' => 'Gangguan Internet',
-                'status' => 'Menunggu',
+                'status' => 'menunggu',
                 'description' => 'Internet mati total sejak pagi.',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -132,7 +132,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id' => 3,
                 'category' => 'Layanan Tambahan',
-                'status' => 'Selesai',
+                'status' => 'selesai',
                 'description' => 'Permintaan upgrade kecepatan.',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -142,18 +142,26 @@ class DatabaseSeeder extends Seeder
         DB::table('detail_tikets')->insert([
             [
                 'tiket_id' => 1,
-                'langkah' => 'Teknisi akan dijadwalkan untuk kunjungan.',
+                'tasks' => json_encode([
+                    ['task' => 'Teknisi akan dijadwalkan untuk kunjungan', 'completed' => false],
+                    ['task' => 'Konfirmasi jadwal dengan pelanggan', 'completed' => false],
+                    ['task' => 'Persiapan peralatan servis', 'completed' => false]
+                ]),
                 'isDone' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'tiket_id' => 2,
-                'langkah' => 'Permintaan sudah diproses dan selesai.',
+                'tasks' => json_encode([
+                    ['task' => 'Permintaan sudah diproses', 'completed' => true],
+                    ['task' => 'Dokumentasi pekerjaan selesai', 'completed' => true],
+                    ['task' => 'Laporan telah dikirim', 'completed' => true]
+                ]),
                 'isDone' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-         ]);
+        ]);
     }
 }
