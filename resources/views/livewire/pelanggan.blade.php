@@ -16,9 +16,6 @@
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        ID
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                         NAMA
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
@@ -31,17 +28,17 @@
                                         STATUS
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                        LANGGANAN
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
                                         AKSI
                                     </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($pelanggans as $pelanggan)
-
+                                @foreach ($users as $pelanggan)
+                                    @forelse($pelanggan->langganans as $langganan)
                                     <tr >
-                                        <td class="px-3">
-                                            <p class="text-sm mb-0">{{ $pelanggan->id }}</p>
-                                        </td>
                                         <td>
                                             <div class="d-flex flex-column justify-content-center">
                                                 <h6 class="mb-0 text-sm">{{ $pelanggan->name }}</h6>
@@ -61,30 +58,25 @@
                                             @endif
                                         </td>
                                         <td class="align-middle text-center">
-                                            <a rel="tooltip" class="btn btn-success btn-link"
-                                                href="{{ route('pelanggan.edit', $pelanggan->id) }}"
-                                                title="Edit">
-                                                <i class="material-icons">edit</i>
+                                            <p class="text-xs text-secondary mb-0">{{ $langganan->paket->nama_paket ?? 'Tidak ada paket' }}</p>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <a href="{{ route('pelanggan.lihat', ['id' => $pelanggan->id]) }}"
+                                                class="btn col btn-info mb-3"
+                                                data-toggle="tooltip" data-original-title="Edit user">
+                                                Lihat Detail
                                             </a>
-                                            <form action="{{ route('pelanggan.destroy', $pelanggan->id) }}" method="POST"
-                                                style="display: inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-link" title="Hapus"
-                                                    onclick="return confirm('Yakin ingin menghapus pelanggan ini?')">
-                                                    <i class="material-icons">close</i>
-                                                </button>
-                                            </form>
                                         </td>
                                     </tr>
 
-                                @empty
+                                    @empty
                                     <tr>
                                         <td colspan="6" class="text-center py-4">
                                             <p class="text-secondary text-xs font-weight-bold mb-0">Tidak ada data pelanggan.</p>
                                         </td>
                                     </tr>
-                                @endforelse
+                                    @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>

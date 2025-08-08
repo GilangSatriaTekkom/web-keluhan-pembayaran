@@ -3,9 +3,9 @@
         @if($complaint)
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4>Detail Keluhan</h4>
-                <button wire:click="$emit('closeDetail')" class="btn btn-sm btn-secondary">
+                {{-- <button wire:click="$emit('closeDetail')" class="btn btn-sm btn-secondary">
                     <i class="fas fa-times"></i> Tutup
-                </button>
+                </button> --}}
             </div>
 
             <div class="row mb-3">
@@ -59,6 +59,7 @@
                     </div>
                 </div>
             @endif
+                @if($complaint->status == 'proses' || $complaint->status == 'menunggu')
                 <div class="col-md-6 row mt-3">
                     @if($authUser->role == 'admin')
                         <div class="col-md-4" style="place-content: end;">
@@ -81,6 +82,7 @@
                     @endif
                     </div>
                 </div>
+                @endif
             </div>
         @else
             <div class="text-center py-4">

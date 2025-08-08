@@ -256,7 +256,7 @@
                                                     </div>
                                                 </td>
                                                 <td class="align-middle text-center text-sm">
-                                                    <span class="badge badge-sm {{ $keluhan->status != 'Belum Lunas' ? 'bg-gradient-success' : 'bg-gradient-danger' }}">{{ $tagihans->status }}</span>
+                                                    <span class="badge badge-sm {{ $keluhan->status != 'Belum Lunas' ? 'bg-gradient-success' : 'bg-gradient-danger' }}">{{ $keluhan->status }}</span>
                                                 </td>
                                             </tr>
                                             @endforeach

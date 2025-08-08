@@ -10,9 +10,9 @@
                                 <h6 class="text-white col text-capitalize ps-3">Tugas Keluhan</h6>
                                 <div class="col text-end">
                                      <!-- Button trigger modal -->
-                                    <a href="{{ route('tabel-keluhan.tambah') }}" class="btn bg-gradient-info">
+                                    <button wire:click="redirectToWhatsApp" class="btn bg-gradient-info">
                                         Hubungi Teknisi
-                                    </a>
+                                    </button>
                                     @if($this->allTasksCompleted())
                                         <button wire:click="selesaikanKeluhan" class="btn bg-gradient-success ms-2">
                                             Selesaikan Keluhan

@@ -115,6 +115,7 @@
     @endif
 
     @livewireScripts
+
 </body>
 
 </html>

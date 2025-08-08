@@ -51,8 +51,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('paket_internets')->insert([
-            ['nama_paket' => 'Paket 1', 'kecepatan' => '75 Mbps', 'harga' => 387068],
-            ['nama_paket' => 'Paket 2', 'kecepatan' => '18 Mbps', 'harga' => 271187],
+            ['nama_paket' => 'Paket 75 Mbps', 'kecepatan' => '75 Mbps', 'harga' => 387068],
+            ['nama_paket' => 'Paket 18 Mbps', 'kecepatan' => '18 Mbps', 'harga' => 271187],
         ]);
 
         DB::table('langganans')->insert([

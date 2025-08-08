@@ -26,6 +26,9 @@ use App\Http\Livewire\Create\Pelanggan as PelangganTambah;
 use App\Http\Livewire\Create\Keluhan as KeluhanTambah;
 use App\Http\Livewire\LihatKeluhan;
 use App\Http\Livewire\TasksKeluhan;
+use App\Http\Livewire\LihatData\LihatPembayaran;
+use App\Http\Livewire\Lihat\Karyawan as LihatKaryawan;
+use App\Http\Livewire\Lihat\Pelanggan as LihatPelanggan;
 
 use App\Models\User;
 use GuzzleHttp\Middleware;
@@ -69,19 +72,22 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('tabel-keluhan/lihat/{id}', LihatKeluhan::class)->name('lihat.keluhan');
 
     Route::get('tabel-pembayaran', TabelPembayaran::class)->name('tabel-pembayaran.index');
+    Route::get('tabel-pembayaran/lihat/{id}', LihatPembayaran::class)->name('tabel-pembayaran.lihat');
 
 
    });
 
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('tabel-keluhan/tasks/{id}', TasksKeluhan::class)->name('tasks.keluhan');
-     Route::get('pelanggan', Pelanggan::class)->name('pelanggan');
+    Route::get('pelanggan', Pelanggan::class)->name('pelanggan');
+    Route::get('pelanggan/lihat/{id}', LihatPelanggan::class)->name('pelanggan.lihat');
     Route::get('pelanggan/tambah', PelangganTambah::class)->name('pelanggan.tambah');
     Route::post('karyawan/add', Karyawan::class)->name('karyawan.add');
     Route::put('pelanggan/update/{id}', [Pelanggan::class, 'edit'])->name('pelanggan.edit');
     Route::delete('pelanggan/destroy/{id}', [Pelanggan::class, 'destroy'])->name('pelanggan.destroy');
 
     Route::get('karyawan', Karyawan::class)->name('karyawan');
+    Route::get('karyawan/lihat/{id}', LihatKaryawan::class)->name('karyawan.lihat');
     Route::get('karyawan/tambah', KaryawanTambah::class)->name('karyawan.tambah');
     Route::post('karyawan/add', Karyawan::class)->name('karyawan.add');
     Route::put('karyawan/update/{id}', [Karyawan::class, 'edit'])->name('karyawan.edit');

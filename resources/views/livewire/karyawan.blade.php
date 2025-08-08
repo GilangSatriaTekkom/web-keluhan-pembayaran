@@ -48,20 +48,11 @@
                                             @endif
                                         </td>
                                         <td class="align-middle text-center">
-                                            <a rel="tooltip" class="btn btn-success btn-link"
-                                               href="{{ route('karyawan.edit', $karyawan->id) }}"
-                                               title="Edit">
-                                                <i class="material-icons">edit</i>
+                                            <a href="{{ route('karyawan.lihat', ['id' => $karyawan->id]) }}"
+                                                class="btn col btn-info mb-3"
+                                                data-toggle="tooltip" data-original-title="Edit user">
+                                                Lihat Detail
                                             </a>
-                                            <form action="{{ route('karyawan.destroy', $karyawan->id) }}" method="POST"
-                                                  style="display: inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-link" title="Hapus"
-                                                        onclick="return confirm('Yakin ingin menghapus karyawan ini?')">
-                                                    <i class="material-icons">close</i>
-                                                </button>
-                                            </form>
                                         </td>
                                     </tr>
                                 @empty

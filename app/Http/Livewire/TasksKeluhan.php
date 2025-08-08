@@ -8,64 +8,96 @@ use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Tiket;
+use Livewire\Attributes\On;
 
 class TasksKeluhan extends Component
 {
+
     public $complaintId;
     public $tasks;
     public $newTask = '';
     public $taskId;
 
+    public function redirectToWhatsApp()
+    {
+       $complaint = Tiket::find($this->complaintId);
+
+        if (!$complaint) {
+            $this->alert('error', 'Error', ['text' => 'Data keluhan tidak ditemukan']);
+            return;
+        }
+
+        $phoneNumber = '6289609875689';
+
+        $message = "Halo, ada keluhan dari pelanggan:\n\n"
+                . "ID Keluhan: {$complaint->id}\n"
+                . "Kategori: {$complaint->category}\n"
+                . "Deskripsi: {$complaint->description}\n\n"
+                . "Tolong listkan tugasan yang harus dilakukan untuk mengatasi hal tersebut.";
+
+        $url = "https://wa.me/{$phoneNumber}?text=" . rawurlencode($message);
+
+        return redirect()->away($url);
+    }
+
     public function selesaikanKeluhan()
     {
         // 1. Verify all tasks are completed
         if (!$this->allTasksCompleted()) {
-            $this->alert('warning', 'Peringatan', [
-                'text' => 'Harap selesaikan semua tugas terlebih dahulu',
-                'timer' => 3000,
-                'toast' => true,
-                'position' => 'top-end'
-            ]);
+            LivewireAlert::title('Peringatan')
+                ->text('Harap selesaikan semua tugas terlebih dahulu')
+                ->warning()
+                ->toast()
+                ->position('top-end')
+                ->timer(3000)
+                ->show();
             return;
         }
 
-        // 2. Update complaint status
-        try {
-            Tiket::where('id', $this->complaintId)
-                ->update(['status' => 'selesai']);
-
-            // 3. Log the completion
-            Log::info('Keluhan diselesaikan', [
-                'complaint_id' => $this->complaintId,
-                'completed_at' => now(),
-                'tasks' => $this->tasks
-            ]);
-
-            // 4. Show success notification
-            $this->alert('success', 'Berhasil!', [
-                'text' => 'Keluhan berhasil diselesaikan',
-                'timer' => 3000,
-                'toast' => true,
-                'position' => 'top-end',
-                'showConfirmButton' => false
-            ]);
-
-            // 5. Optional: Redirect after completion
-            return redirect()->route('tabel-keluhan.index');
-
-        } catch (\Exception $e) {
-            Log::error('Gagal menyelesaikan keluhan', [
-                'error' => $e->getMessage(),
-                'complaint_id' => $this->complaintId
-            ]);
-
-            $this->alert('error', 'Gagal!', [
-                'text' => 'Gagal menyelesaikan keluhan: ' . $e->getMessage(),
-                'timer' => 5000,
-                'toast' => true,
-                'position' => 'top-end'
-            ]);
+        // 2. Show confirmation dialog
+        LivewireAlert::title('Konfirmasi Penyelesaian')
+            ->text('Apakah Anda yakin ingin menyelesaikan keluhan ini?')
+            ->withConfirmButton('Ya, Selesaikan')
+            ->withDenyButton('Tidak')
+            ->onConfirm('prosesPenyelesaianKeluhan')
+            ->show();
         }
+
+        public function prosesPenyelesaianKeluhan()
+        {
+
+                Tiket::where('id', $this->complaintId)
+                    ->update(['status' => 'selesai']);
+
+                // 3. Log the completion
+                Log::info('Keluhan diselesaikan', [
+                    'complaint_id' => $this->complaintId,
+                    'completed_at' => now(),
+                    'tasks' => $this->tasks
+                ]);
+
+                // 4. Show success notification with redirect
+                LivewireAlert::title('Berhasil!')
+                    ->text('Keluhan berhasil diselesaikan')
+                    ->success()
+                    ->toast()
+                    ->position('center')
+                    ->timer(3000)
+                    ->show();
+
+                     $this->dispatch('redirect-after-delay',
+                        url: route('tabel-keluhan.index'),
+                        delay: 8000
+                    );
+
+
+        }
+
+    #[On('redirect-after-delay')]
+    public function returnToTableKeluhan()
+    {
+
+        return redirect()->route('tabel-keluhan.index');
     }
 
 
@@ -73,7 +105,7 @@ class TasksKeluhan extends Component
     {
         $this->complaintId = $id;
         $detail = DetailTiket::where('tiket_id', $this->complaintId)->first();
-        $this->tasks = json_decode($detail->tasks, true) ?? [];
+        $this->tasks = $detail ? (json_decode($detail->tasks, true) ?? []) : [];
         $this->taskId = $detail->id ?? null;
     }
 

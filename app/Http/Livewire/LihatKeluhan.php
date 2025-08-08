@@ -43,7 +43,7 @@ class LihatKeluhan extends Component
     {
         Tiket::where('id', $this->complaintId)
             ->update(['status' => 'proses']);
-       return redirect()->route('tasks.keluhan');
+       return redirect()->route('tasks.keluhan', ['id' => $this->complaintId]);
     }
 
     public function openTaskModal()

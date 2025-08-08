@@ -142,6 +142,9 @@
                                                             <span class="text-xs font-weight-bold">{{ $t->category }}</span>
                                                         </td>
                                                         <td class="align-middle text-center">
+                                                            <span class="text-sm font-weight-bold mb-0">{{ formatTanggalIndonesia($t->updated_at) }}</span>
+                                                        </td>
+                                                        <td class="align-middle text-center">
                                                             <span class="badge badge-sm bg-gradient-success">{{ $t->status }}</span>
                                                         </td>
                                                         <td class="align-middle text-center">
