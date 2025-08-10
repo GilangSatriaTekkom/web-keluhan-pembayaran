@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             'email'      => 'admin@material.com',
             'password'   => ('secret'),
             'location'   => 'Jl. Sukabumi No. 1',
-            'phone'      => '081234567890',
+            'phone'      => '+6281234567890',
             'role'       => 'admin',
             'status'     => 'aktif',
         ]);
@@ -33,18 +33,18 @@ class DatabaseSeeder extends Seeder
             [
                 'name'       => 'Hendri Wibowo',
                 'email'      => 'banawi24@hotmail.com',
-                'password'   => ('password'),
+                'password'   => Hash::make('password'),
                 'location'   => 'Jl. Anggrek No. 7',
-                'phone'      => '082112345678',
+                'phone'      => '+6282112345678',
                 'role'       => 'pelanggan',
                 'status'     => 'aktif',
             ],
             [
                 'name'       => 'R.A. Kayla Hastuti, M.Pd',
                 'email'      => 'ysaptono@yahoo.com',
-                'password'   => ('password'),
+                'password'   => Hash::make('password'),
                 'location'   => 'Jl. Melati No. 10',
-                'phone'      => '082113456789',
+                'phone'      => '+6282113456789',
                 'role'       => 'pelanggan',
                 'status'     => 'aktif',
             ],
@@ -60,11 +60,16 @@ class DatabaseSeeder extends Seeder
                     'user_id' => 2,
                     'paket_id' => 1,
                     'status_langganan' => 'aktif',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+
                 ],
                 [
                     'user_id' => 3,
                     'paket_id' => 2,
                     'status_langganan' => 'nonaktif',
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
 
         ]);
@@ -77,7 +82,7 @@ class DatabaseSeeder extends Seeder
              [
                 'user_id' => 2,
                 'langganan_id' => $langgananUser2?->id,
-                'status_pembayaran' => 'Belum Lunas',
+                'status_pembayaran' => 'belum_lunas',
                 'metode_pembayaran' => 'Transfer Bank',
                 'jumlah_tagihan' => 311689,
                 'tgl_jatuh_tempo' => '2024-12-31',
@@ -88,7 +93,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id' => 3,
                 'langganan_id' => $langgananUser3?->id,
-                'status_pembayaran' => 'Belum Lunas',
+                'status_pembayaran' => 'belum_lunas',
                 'metode_pembayaran' => 'Midtrans',
                 'jumlah_tagihan' => 171939,
                 'tgl_jatuh_tempo' => '2023-11-30',

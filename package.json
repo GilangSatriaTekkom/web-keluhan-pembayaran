@@ -1,4 +1,5 @@
 {
+    "type": "module",
     "private": true,
     "scripts": {
         "dev": "npm run development",
@@ -7,7 +8,9 @@
         "watch-poll": "mix watch -- --watch-options-poll=1000",
         "hot": "mix watch --hot",
         "prod": "npm run production",
-        "production": "mix --production"
+        "production": "mix --production",
+        "build": "vite build",
+        "serve": "vite preview"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.21",

@@ -8,6 +8,7 @@ use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Tiket;
+use App\Models\User;
 use Livewire\Attributes\On;
 
 class TasksKeluhan extends Component
@@ -36,6 +37,24 @@ class TasksKeluhan extends Component
                 . "Tolong listkan tugasan yang harus dilakukan untuk mengatasi hal tersebut.";
 
         $url = "https://wa.me/{$phoneNumber}?text=" . rawurlencode($message);
+
+        return redirect()->away($url);
+    }
+
+    public function redirectToWhatsAppPelanggan()
+    {
+       $complaint = Tiket::find($this->complaintId);
+
+        if (!$complaint) {
+            $this->alert('error', 'Error', ['text' => 'Data keluhan tidak ditemukan']);
+            return;
+        }
+
+        $phoneNumber = User::where('role', 'pelanggan')
+            ->where('id', $complaint->user_id)
+            ->value('phone');
+
+        $url = "https://wa.me/{$phoneNumber}";
 
         return redirect()->away($url);
     }
@@ -82,21 +101,18 @@ class TasksKeluhan extends Component
                     ->success()
                     ->toast()
                     ->position('center')
-                    ->timer(3000)
+                    ->timer(2000)
                     ->show();
 
-                     $this->dispatch('redirect-after-delay',
-                        url: route('tabel-keluhan.index'),
-                        delay: 8000
+                    $this->dispatch('redirect-after-delay',
+                        url: route('tabel-keluhan.index')
                     );
-
-
         }
 
     #[On('redirect-after-delay')]
-    public function returnToTableKeluhan()
+        public function returnToTableKeluhan()
     {
-
+        sleep(2); // Delay for 3 seconds before redirecting
         return redirect()->route('tabel-keluhan.index');
     }
 
@@ -111,10 +127,6 @@ class TasksKeluhan extends Component
 
     public function render()
     {
-        Log::debug("message", [
-            'complaint_id' => $this->complaintId,
-            'tasks' => $this->tasks
-        ]);
         return view('livewire.tasks-keluhan'
         );
     }

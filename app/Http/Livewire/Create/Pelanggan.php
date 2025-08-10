@@ -66,7 +66,6 @@ class Pelanggan extends Component
 
         public function submit()
         {
-            try {
                 $this->validate();
 
                 $user = User::create([
@@ -96,12 +95,6 @@ class Pelanggan extends Component
                     ->show();
 
                 $this->reset('user');
-            } catch (\Exception $e) {
-                LivewireAlert::title('Error')
-                    ->text('Terjadi kesalahan: ' . $e->getMessage())
-                    ->error()
-                    ->show();
-            }
         }
 
         public function returnToList()

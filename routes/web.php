@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Http\Livewire\Auth\ForgotPassword;
 use App\Http\Livewire\Auth\Login;
 use App\Http\Livewire\Auth\Register;
@@ -29,6 +31,7 @@ use App\Http\Livewire\TasksKeluhan;
 use App\Http\Livewire\LihatData\LihatPembayaran;
 use App\Http\Livewire\Lihat\Karyawan as LihatKaryawan;
 use App\Http\Livewire\Lihat\Pelanggan as LihatPelanggan;
+use App\Http\Controllers\MidtransController;
 
 use App\Models\User;
 use GuzzleHttp\Middleware;
@@ -72,7 +75,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('tabel-keluhan/lihat/{id}', LihatKeluhan::class)->name('lihat.keluhan');
 
     Route::get('tabel-pembayaran', TabelPembayaran::class)->name('tabel-pembayaran.index');
-    Route::get('tabel-pembayaran/lihat/{id}', LihatPembayaran::class)->name('tabel-pembayaran.lihat');
+    Route::get('tabel-pembayaran/lihat/{id}', LihatPembayaran::class)->name('lihat.pembayaran');
 
 
    });

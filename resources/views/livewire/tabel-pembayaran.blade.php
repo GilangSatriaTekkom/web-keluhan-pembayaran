@@ -52,8 +52,12 @@
                                                     <td class="text-center">
                                                         <span class="badge badge-sm bg-gradient-danger">{{ $tagihan->status_pembayaran }}</span>
                                                     </td>
-                                                    <td class="text-center">
-                                                        <a href="#" class="text-secondary font-weight-bold text-xs">Lihat Detail</a>
+                                                    <td class="align-middle text-center">
+                                                        <a href="{{ route('lihat.pembayaran', ['id' => $tagihan->id]) }}"
+                                                            class="btn col btn-info mb-3"
+                                                            data-toggle="tooltip" data-original-title="Edit user">
+                                                            Lihat Detail
+                                                        </a>
                                                     </td>
                                                 </tr>
                                             @endif

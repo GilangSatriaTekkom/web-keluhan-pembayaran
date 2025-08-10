@@ -10,6 +10,9 @@
                                 <h6 class="text-white col text-capitalize ps-3">Tugas Keluhan</h6>
                                 <div class="col text-end">
                                      <!-- Button trigger modal -->
+                                    <button wire:click="redirectToWhatsAppPelanggan" class="btn bg-gradient-info">
+                                        Hubungi Pelanggan
+                                    </button>
                                     <button wire:click="redirectToWhatsApp" class="btn bg-gradient-info">
                                         Hubungi Teknisi
                                     </button>

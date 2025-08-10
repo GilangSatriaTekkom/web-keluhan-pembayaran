@@ -20,7 +20,7 @@ class Register extends Component
 
 
     protected $rules=[
-     'name' => 'required|min:3',  // Uncomment dan tambahkan validasi
+    'name' => 'required|min:3',  // Uncomment dan tambahkan validasi
     'email' => 'required|email|unique:users,email',
     'password' => 'required|min:5|confirmed',
     'role' => 'required|in:pelanggan,admin',  // Contoh validasi untuk role
@@ -32,8 +32,6 @@ class Register extends Component
     {
         //  try {
             $validatedData = $this->validate();
-            \Log::info('Registering user: ', $validatedData);
-
 
             User::create([
                 'name' => $validatedData['name'],
@@ -43,27 +41,12 @@ class Register extends Component
                 'status' => $this->status
             ]);
 
-            \Log::info('User registered successfully: ', ['password' => Hash::make($validatedData['password'])]);
-
-
-             \Log::debug('Login attempt', [
-                'input_password' => $validatedData['password'],
-                'db_password' => User::where('email', $validatedData['email'])->first()->password,
-                'hash_check' => Hash::check($validatedData['password'], User::where('email', $validatedData['email'])->first()->password)
-            ]);
-
             LivewireAlert::title('Register Berhasil!')
                 ->success()
                 ->text('Silahkan Untuk Melakukan Login!')
                 ->withConfirmButton('Ok')
                 ->onConfirm('returnLogin')
                 ->show();
-
-        // } catch (\Exception $e) {
-        //      LivewireAlert::title('Ada Kesalahan!')
-        //         ->error()
-        //         ->show();
-        // }
     }
 
     public function returnLogin() {

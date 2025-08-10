@@ -36,8 +36,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($users as $pelanggan)
-                                    @forelse($pelanggan->langganans as $langganan)
+                                @forelse ($users as $pelanggan)
                                     <tr >
                                         <td>
                                             <div class="d-flex flex-column justify-content-center">
@@ -69,14 +68,13 @@
                                         </td>
                                     </tr>
 
-                                    @empty
+                                @empty
                                     <tr>
                                         <td colspan="6" class="text-center py-4">
                                             <p class="text-secondary text-xs font-weight-bold mb-0">Tidak ada data pelanggan.</p>
                                         </td>
                                     </tr>
-                                    @endforelse
-                                @endforeach
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

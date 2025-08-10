@@ -70,4 +70,17 @@ class User extends Authenticatable
         return $this->hasMany(Tiket::class);
     }
 
+
+    protected static function booted()
+    {
+        static::updated(function ($user) {
+            if ($user->isDirty('paket_internet_id')) {
+                PaketInternetChanged::dispatch(
+                    $user,
+                    $user->getOriginal('paket_internet_id')
+                );
+            }
+        });
+    }
+
 }

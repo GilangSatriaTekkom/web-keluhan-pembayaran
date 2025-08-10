@@ -1,107 +1,151 @@
 <div class="container-fluid px-2 px-md-4">
+    @section('midtrans')
+    @endsection
     <div class="card card-body mx-3 mx-md-4">
+
+        {{-- Alert Sukses --}}
+        @if (session('status'))
+            <div class="alert alert-success alert-dismissible text-white" role="alert">
+                <span class="text-sm">{{ session('status') }}</span>
+                <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
         @if($tagihan)
+            {{-- Header ID & Status Pembayaran --}}
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4>Detail Pembayaran</h4>
-                {{-- <button wire:click="$emit('closeDetail')" class="btn btn-sm btn-secondary">
-                    <i class="fas fa-times"></i> Tutup
-                </button> --}}
+                <h3 class="mb-0">Tagihan ID: {{ $id }}</h3>
+                <span class="badge
+                    @if($status == 'lunas') bg-success
+                    @elseif($status == 'belum_lunas') bg-danger
+                    @else bg-secondary @endif">
+                    {{ ucfirst(str_replace('_', ' ', $status)) }}
+                </span>
+            </div>
+
+            {{-- Grid Info --}}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h6>User ID</h6>
+                    <p class="text-muted">{{ $userId }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Langganan ID</h6>
+                    <p class="text-muted">{{ $langganan }}</p>
+                </div>
             </div>
 
             <div class="row mb-3">
-                <div class="col-md-6">
-                    <h6>Status Pembayaran</h6>
-                    <span class="badge
-                        @if($tagihan->status_pembayaran == 'Belum Dibayar') bg-danger
-                        @elseif($tagihan->status_pembayaran == 'Diproses') bg-warning
-                        @else bg-success @endif">
-                        {{ $tagihan->status_pembayaran }}
-                    </span>
-                </div>
                 <div class="col-md-6">
                     <h6>Metode Pembayaran</h6>
-                    <p class="text-muted">{{ $tagihan->metode_pembayaran ?? 'Belum dipilih' }}</p>
+                    <p class="text-muted">{{ $metode }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Jumlah Tagihan</h6>
+                    <p class="text-muted">Rp {{ number_format($jumlah, 0, ',', '.') }}</p>
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <h6>Jumlah Tagihan</h6>
-                    <p class="text-muted">Rp {{ number_format($tagihan->jumlah_tagihan, 0, ',', '.') }}</p>
+                    <h6>Tanggal Jatuh Tempo</h6>
+                    <p class="text-muted">{{ formatTanggalIndonesia($jatuhTempo) }}</p>
                 </div>
                 <div class="col-md-6">
-                    <h6>Tanggal Jatuh Tempo</h6>
-                    <p class="text-muted">{{ \Carbon\Carbon::parse($tagihan->tgl_jatuh_tempo)->format('d F Y') }}</p>
+                    <h6>Periode Tagihan</h6>
+                    <p class="text-muted">{{ $periode }}</p>
                 </div>
             </div>
 
-            <div class="mb-3">
-                <h6>Periode Tagihan</h6>
-                <p class="text-muted">{{ $tagihan->periode_tagihan }}</p>
-            </div>
-
-            <div class="row">
+            {{-- Tanggal Dibuat dan Update --}}
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <h6>Dibuat Pada</h6>
-                    <p class="text-muted">{{ $tagihan->created_at->format('d F Y H:i') }}</p>
+                    <p class="text-muted">{{ formatTanggalIndonesia($created) }}</p>
                 </div>
                 <div class="col-md-6">
                     <h6>Terakhir Diupdate</h6>
-                    <p class="text-muted">{{ $tagihan->updated_at->format('d F Y H:i') }}</p>
+                    <p class="text-muted">{{ formatTanggalIndonesia($updated) }}</p>
                 </div>
             </div>
 
-            <div class="row">
-                @if($tagihan->user)
-                <div class="col-md-6 mt-3">
-                    <h6>Pelanggan</h6>
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-sm me-2">
-                            <span class="avatar-initial rounded-circle bg-primary text-white">
-                                {{ substr($tagihan->user->name, 0, 1) }}
-                            </span>
+            {{-- Tombol Edit --}}
+            <div class="text-end">
+                <button
+                    wire:click="bayar"
+                    class="btn btn-success"
+                    >
+                    Bayar Tagihan
+                </button>
+            </div>
+
+            {{-- Modal Edit Tagihan --}}
+            <div wire:ignore.self class="modal fade" id="editTagihanModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+
+                        {{-- Header Modal --}}
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Tagihan</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div>
-                            <p class="mb-0">{{ $tagihan->user->name }}</p>
-                            <small class="text-muted">{{ $tagihan->user->email }}</small>
+
+                        {{-- Body Modal --}}
+                        <div class="modal-body">
+                            <form wire:submit.prevent="updateTagihan">
+                                <div class="row">
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">Status Pembayaran</label>
+                                        <select wire:model.defer="status" class="form-control border border-2 p-2">
+                                            <option value="">Pilih Status</option>
+                                            <option value="belum_lunas">Belum Lunas</option>
+                                            <option value="lunas">Lunas</option>
+                                            <option value="pending">Pending</option>
+                                        </select>
+                                        @error('status') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">Metode Pembayaran</label>
+                                        <input wire:model.defer="metode" type="text" class="form-control border border-2 p-2" placeholder="Contoh: Transfer Bank, Midtrans">
+                                        @error('metode') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">Jumlah Tagihan (Rp)</label>
+                                        <input wire:model.defer="jumlah" type="number" class="form-control border border-2 p-2" placeholder="Masukkan jumlah tagihan">
+                                        @error('jumlah') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">Tanggal Jatuh Tempo</label>
+                                        <input wire:model.defer="jatuhTempo" type="date" class="form-control border border-2 p-2">
+                                        @error('jatuhTempo') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">Periode Tagihan</label>
+                                        <input wire:model.defer="periode" type="text" class="form-control border border-2 p-2" placeholder="Contoh: 2024-12">
+                                        @error('periode') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+                                </div>
+                            </form>
                         </div>
+
+                        {{-- Footer Modal --}}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn bg-gradient-dark" wire:click="updateTagihan">Submit</button>
+                        </div>
+
                     </div>
                 </div>
-                @endif
-
-                @if($tagihan->langganan)
-                <div class="col-md-6 mt-3">
-                    <h6>Layanan Langganan</h6>
-                    <p class="mb-0">{{ $tagihan->langganan->nama_layanan ?? 'Tidak tersedia' }}</p>
-                    <small class="text-muted">ID: {{ $tagihan->langganan_id }}</small>
-                </div>
-                @endif
             </div>
 
-            @if($tagihan->status_pembayaran == 'Belum Dibayar' || $tagihan->status_pembayaran == 'Diproses')
-            <div class="row mt-4">
-                @if($authUser->role == 'admin')
-                <div class="col-md-6" style="place-content: end;">
-                    <button wire:click="alertPopup('Konfirmasi Pembayaran', 'Yakin konfirmasi pembayaran ini?', 'konfirmasiPembayaran')"
-                        class="btn btn-md btn-success mb-3"
-                        data-toggle="tooltip" data-original-title="Konfirmasi Pembayaran">
-                        Konfirmasi Pembayaran
-                    </button>
-                </div>
-                @endif
-
-                @if($authUser->role == 'pelanggan' && $tagihan->status_pembayaran == 'Belum Dibayar')
-                <div class="col-md-6" style="place-content: end;">
-                    <button wire:click="openPembayaranModal"
-                        class="btn btn-md btn-primary mb-3"
-                        data-toggle="tooltip" data-original-title="Bayar Tagihan">
-                        Bayar Sekarang
-                    </button>
-                </div>
-                @endif
-            </div>
-            @endif
         @else
+            {{-- Jika tagihan tidak ditemukan --}}
             <div class="text-center py-4">
                 <i class="fas fa-info-circle fa-2x text-muted mb-3"></i>
                 <p class="text-muted">Pilih tagihan untuk melihat detail</p>

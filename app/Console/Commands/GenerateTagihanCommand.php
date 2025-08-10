@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Models\Langganan;
 
 class GenerateTagihanCommand extends Command
 {
@@ -11,7 +12,7 @@ class GenerateTagihanCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:generate-tagihan-command';
+    protected $signature = 'generate:tagihan';
 
     /**
      * The console command description.
@@ -26,7 +27,7 @@ class GenerateTagihanCommand extends Command
 
     public function handle()
     {
-        $langganans = Langganan::where('status', 'aktif')->get();
+        $langganans = Langganan::where('status_langganan', 'aktif')->get();
 
         foreach ($langganans as $langganan) {
             $tanggalTagihan = $langganan->created_at->startOfMonth();
@@ -34,11 +35,11 @@ class GenerateTagihanCommand extends Command
             while ($tanggalTagihan <= now()) {
                 Tagihan::firstOrCreate([
                     'langganan_id' => $langganan->id,
-                    'tanggal_tagihan' => $tanggalTagihan
+                    'periode_tagihan' => $tanggalTagihan
                 ], [
-                    'jatuh_tempo' => $tanggalTagihan->copy()->addDays(7),
-                    'jumlah' => $langganan->paket->harga,
-                    'status' => 'belum_lunas'
+                    'tgl_jatuh_tempo' => $tanggalTagihan->copy()->addDays(7),
+                    'jumlah_tagihan' => $langganan->paket->harga,
+                    'status_pembayaran' => 'belum_lunas'
                 ]);
 
                 $tanggalTagihan->addMonth();

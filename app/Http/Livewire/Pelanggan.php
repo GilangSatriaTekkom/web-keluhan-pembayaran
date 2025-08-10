@@ -23,8 +23,6 @@ class Pelanggan extends Component
                 ->where('role', 'pelanggan')
                 ->get();
 
-        Log::debug("message", ['users' => $users]);
-
 
 
         return view('livewire.pelanggan', compact('users'));
