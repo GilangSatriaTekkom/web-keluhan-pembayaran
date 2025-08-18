@@ -69,7 +69,7 @@
                     Profile
                   </a>
                 </li>
-                                  
+
                 @endauth
                 <li class="nav-item">
                   <a class="nav-link me-2" href="{{ route('register') }}">

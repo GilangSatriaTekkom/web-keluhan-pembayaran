@@ -37,7 +37,7 @@
 </head>
 
 <body class="bg-gray-200">
-  <div class="container position-sticky z-index-sticky top-0">
+  <div class="container position-sticky z-index-sticky top-0" style="z-index: 10;">
     <div class="row">
       <div class="col-12">
         <!-- Navbar -->
@@ -69,7 +69,7 @@
                     Profile
                   </a>
                 </li>
-                                  
+
                 @endauth
                 <li class="nav-item">
                   <a class="nav-link me-2" href="{{ route('register') }}">

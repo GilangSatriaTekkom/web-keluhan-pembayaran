@@ -24,7 +24,7 @@ class LihatPembayaran extends Component
     public $tagihan;
     public $user;
 
-     public $snapToken;
+    public $snapToken;
 
     public function mount($id)
     {
@@ -47,7 +47,7 @@ class LihatPembayaran extends Component
         $this->initMidtrans();
     }
 
-   protected function initMidtrans()
+    protected function initMidtrans()
     {
 
 

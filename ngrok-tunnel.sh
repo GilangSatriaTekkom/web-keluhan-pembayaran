@@ -5,10 +5,12 @@ echo "Membangun asset..."
 npm run build
 
 # Jalankan Laravel di background
-php artisan serve &
+php artisan serve
 
 # Tunggu 2 detik biar Laravel siap
 sleep 2
 
 # Jalankan ngrok untuk Laravel
-./ngrok http 8000
+# ./ngrok http 8000
+
+./ngrok http --url=adder-ultimate-snapper.ngrok-free.app 8000

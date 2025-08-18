@@ -65,6 +65,23 @@ class Keluhan extends Component
         }
     }
 
+    public function store(Request $request)
+    {
+        dd("Tiket Keluhan", $request);
+       $tiket = Tiket::create([
+            'user_id' => Auth::id(),
+            'category' => $request, // default value
+            'status' => 'menunggu', // status default
+            'description' => $request->deskripsi_keluhan,
+            'judul' => $request->judul_keluhan // tambahkan kolom judul jika perlu
+        ]);
+
+        return [
+            'fulfillmentText' => "Keluhan Anda telah tercatat. ID Tiket: {$tiket->id}",
+            'tiket_id' => $tiket->id
+        ];
+    }
+
     public function return() {
         return redirect()->route('tabel-keluhan.index');
     }

@@ -75,6 +75,44 @@
         .data-hover:hover {
             background-color: #f5f5f5;
         }
+
+        /* Warna Theme Biru Modern */
+        df-messenger {
+            --df-messenger-bot-message: #e73f7d;
+            --df-messenger-user-message: #cf1db1;
+            --df-messenger-font-color: #ffffff;
+            --df-messenger-button-titlebar-color: #d81b60;
+            --df-messenger-chat-background-color: #f9f9f9;
+            --df-messenger-titlebar-background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            z-index: 200000 !important;
+            position: absolute;
+        }
+
+        /* Animasi & Border Radius */
+        df-messenger-chat-bubble {
+            border-radius: 12px !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        /* Tombol Menu Interaktif */
+        .df-messenger-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .df-messenger-chip {
+            background: #4285f4 !important;
+            color: white !important;
+            border-radius: 20px !important;
+            padding: 8px 16px !important;
+            margin: 4px !important;
+            transition: all 0.3s ease;
+        }
+        .df-messenger-chip:hover {
+            background: #3367d6 !important;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 
@@ -116,6 +154,16 @@
 
     @livewireScripts
 
+   <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+
+   <df-messenger
+    chat-icon="https:&#x2F;&#x2F;cdn-icons-png.flaticon.com&#x2F;512&#x2F;8943&#x2F;8943377.png"
+    intent="WELCOME"
+    chat-title="{{ auth()->check() ? auth()->user()->name : 'Anonymous' }}"
+    agent-id="76064ace-fcb9-4d65-9eb2-1e86f7c4ff57"
+     session-id="{{ auth()->check() ? 'user-'.auth()->id() : 'guest-'.session()->getId() }}"
+    language-code="en"
+    ></df-messenger>
 </body>
 
 @if(View::hasSection('midtrans'))
