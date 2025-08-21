@@ -77,6 +77,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('tabel-pembayaran', TabelPembayaran::class)->name('tabel-pembayaran.index');
     Route::get('tabel-pembayaran/lihat/{id}', LihatPembayaran::class)->name('lihat.pembayaran');
 
+    Route::get('/bayar-tagihan', function () {
+        return view('bayar-tagihan'); // Blade ini extend base.php
+    })->name('bayar-tagihan');
+
 
    });
 

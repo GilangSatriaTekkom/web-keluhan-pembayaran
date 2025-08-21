@@ -166,17 +166,14 @@
     ></df-messenger>
 </body>
 
-@if(View::hasSection('midtrans'))
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js"
+<script src="https://app.sandbox.midtrans.com/snap/snap.js"
             data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+@if(View::hasSection('midtrans'))
+
 
     <script>
         document.addEventListener('livewire:init', function () {
             Livewire.on('midtrans-pay', function (data) {
-                // if (!data.snapToken) {
-                //     alert('Token pembayaran tidak ditemukan!');
-                //     return;
-                // }
 
                 window.snap.pay(data.snapToken, {
                     onSuccess: function(result) {
@@ -196,5 +193,61 @@
         });
     </script>
 @endif
+
+<script>
+document.querySelector('df-messenger')
+  .addEventListener('df-response-received', function(event) {
+    const detectIntentResponse = event.detail.response;
+
+    if (!detectIntentResponse) return;
+
+    const intent = detectIntentResponse.queryResult?.intent?.displayName || '';
+    const fulfillmentMessages = detectIntentResponse.queryResult?.fulfillmentMessages || [];
+      fulfillmentMessages.forEach(msg => {
+
+        if (msg.payload?.midtrans?.snap_token) {
+          const token = msg.payload.midtrans.snap_token;
+          console.warn('Tidak ada messages di response:', token);
+          snap.pay(token, {
+            onSuccess: function(result){ console.log('Pembayaran sukses', result); },
+            onPending: function(result){ console.log('Pembayaran pending', result); },
+            onError: function(result){ console.error('Pembayaran gagal', result); }
+          });
+        }
+      });
+  });
+</script>
+
+
+{{-- <script>
+    document.querySelector('df-messenger').addEventListener('df-response-received', function (event) {
+        console.log('tuturu Edan');
+        const payload = event.detail.response.fulfillmentMessages[0].payload;
+
+        // Pastikan payload dan snapToken ada
+        if (payload && payload.richContent && payload.richContent[0][0].snapToken) {
+            const snapToken = payload.richContent[0][0].snapToken;
+
+            console.log('Tuturu edan 2');
+
+            // Pastikan snap.js sudah dimuat sebelum memanggil snap.pay()
+            if (typeof snap !== 'undefined' && snap) {
+                window.snap.pay(snapToken, {
+                    onSuccess: function(result){
+                        console.log("Pembayaran berhasil", result);
+                    },
+                    onPending: function(result){
+                        console.log("Pembayaran tertunda", result);
+                    },
+                    onError: function(result){
+                        console.log("Pembayaran gagal", result);
+                    }
+                });
+            } else {
+                console.error('Midtrans Snap.js belum dimuat.');
+            }
+        }
+    });
+</script> --}}
 
 </html>

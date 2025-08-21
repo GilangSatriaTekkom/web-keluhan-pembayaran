@@ -9,8 +9,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Livewire\LihatData\LihatPembayaran;
 use Illuminate\Support\Str;
 use App\Models\User;
-use App\Models\Keluhan;
+use App\Models\Tiket;
 use App\Models\Tagihan;
+use Midtrans\Snap;
+use Midtrans\Config;
 
 class DialogflowHandler extends Controller
 {
@@ -27,8 +29,6 @@ class DialogflowHandler extends Controller
         $session = $request->input('session');
         $sessionId = Str::afterLast($session, '/');
 
-        Log::info('Session: '.$session.' | SessionId: '.$sessionId);
-
         // Cek user login dari sessionId
         if (Str::startsWith($sessionId, 'user-')) {
             $userId = Str::after($sessionId, 'user-');
@@ -42,6 +42,7 @@ class DialogflowHandler extends Controller
         {
             return $this->handleWelcomeIntent();
         }
+
 
 
         return match ($intent) {
@@ -58,6 +59,7 @@ class DialogflowHandler extends Controller
             'buatKeluhan_verifikasi' => $this->handleComplaintConfirmation($parameters, $session),
 
             'bayarTagihan'    => $this->handleBillPayment($parameters, $session),
+            'bayarTagihan_select'    => $this->processBillPayment($parameters, $session),
             'CekKeluhan'    => $this->handleComplaintList($session),
             'CekTagihan'    => $this->handleBillList($session),
 
@@ -72,13 +74,13 @@ class DialogflowHandler extends Controller
         );
 
         $chipsPart = $this->createChipsResponse([
-            '1. Buat akun',
-            '2. Buat keluhan',
-            '3. Bayar tagihan',
-            '4. Cek keluhan',
-            '5. Cek tagihan',
-            '6. Hubungi CS',
-            '7. Pertanyaan layanan'
+            'Buat akun',
+            'Buat keluhan',
+            'Bayar tagihan',
+            'Cek keluhan',
+            'Cek tagihan',
+            'Hubungi CS',
+            'Pertanyaan layanan'
         ]);
 
         return [
@@ -95,7 +97,8 @@ class DialogflowHandler extends Controller
      * ======================================================== */
     protected function handleAccountName(array $parameters, string $session)
     {
-        $name = $parameters['person']['name'] ?? '';
+        $name = data_get($parameters, 'person.0.name', '');
+        Log::debug("message", ['name' => $name]);
         if (empty($name) || strlen($name) < 3) {
             return $this->createContextResponse(
                 "Nama terlalu pendek, minimal 3 karakter. Masukkan nama lagi:",
@@ -185,20 +188,6 @@ class DialogflowHandler extends Controller
         if ($this->isAnonymous) {
             return $this->createLoginRequiredResponse('membuat keluhan');
         }
-        // $judul = $parameters['judul'] ?? '';
-        // if (empty($judul) || strlen($judul) < 5) {
-        //     return $this->createContextResponse(
-        //         "Judul keluhan terlalu pendek, minimal 5 karakter. Masukkan lagi:",
-        //         $session,
-        //         'buatKeluhan_judul'
-        //     );
-        // }
-        // $this->saveSessionData($session, ['judul' => $judul]);
-        // return $this->createContextResponse(
-        //     "Judul disimpan. Sekarang masukkan deskripsi keluhan Anda:",
-        //     $session,
-        //     'buatKeluhan_deskripsi'
-        // );
     }
     protected function handleComplaintTitle(array $parameters, string $session)
     {
@@ -252,11 +241,11 @@ class DialogflowHandler extends Controller
             );
         }
         $data = $this->getSessionData($session);
-        Keluhan::create([
+        Tiket::create([
             'user_id' => $this->userId,
-            'judul' => $data['judul'],
-            'deskripsi' => $data['deskripsi'],
-            'status' => 'baru'
+            'category' => $parameters['judul'],
+            'description' => $parameters['deskripsi'],
+            'status' => 'menunggu'
         ]);
         return $this->createTextResponse("Keluhan berhasil dibuat. Tim kami akan segera memprosesnya.");
     }
@@ -345,6 +334,63 @@ class DialogflowHandler extends Controller
         return $badges[$status] ?? ucfirst($status);
     }
 
+    protected function processBillPayment($parameters, string $session)
+    {
+        $nomorTagihan = $parameters ?? null;
+
+        $tagihan = Tagihan::where('user_id', $this->userId)
+                        ->where('id', $nomorTagihan)
+                        ->first();
+
+        if (!$tagihan) {
+            return $this->createContextResponse(
+                "Tagihan tidak ditemukan. Silakan pilih lagi:",
+                $session,
+                'bayarTagihan-pilih'
+            );
+        }
+
+        // Generate SnapToken
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+        \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        $user = User::find($tagihan->user_id);
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => 'TAGIHAN-' . $tagihan->id . '-' . time(),
+                'gross_amount' => $tagihan->jumlah_tagihan,
+            ],
+            'customer_details' => [
+                'first_name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ],
+            'enabled_payments' => ["other_qris", 'bank_transfer', 'credit_card', 'gopay', 'shopeepay'],
+        ];
+
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+        } catch (\Exception $e) {
+            \Log::error('Midtrans Error: ' . $e->getMessage(), $params);
+            return $this->createTextResponse("Terjadi error saat memproses pembayaran.");
+        }
+
+        return  [
+            'fulfillmentMessages' => [
+                [
+                    'payload' => [
+                        'midtrans' => [
+                            'snap_token' => $snapToken
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
     /* ========================================================
      *               FUNGSI CEK LIHAT KELUHAN
      * ======================================================== */
@@ -355,7 +401,7 @@ class DialogflowHandler extends Controller
             return $this->createLoginRequiredResponse('cek keluhan');
         }
 
-        $keluhan = Keluhan::where('user_id', $this->userId)
+        $keluhan = Tiket::where('user_id', $this->userId)
                         ->latest()
                         ->take(5)
                         ->get();
