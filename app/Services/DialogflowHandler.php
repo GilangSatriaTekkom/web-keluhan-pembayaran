@@ -50,6 +50,7 @@ class DialogflowHandler extends Controller
 
         return match ($intent) {
             // --- Pendaftaran akun ---
+            'buatAkun'           => $this->handleCreateAccount($parameters, $session),
             'buatAkun_nama'      => $this->handleAccountName($parameters, $session),
             'buatAkun_email'     => $this->handleAccountEmail($parameters, $session),
             'buatAkun_password'  => $this->handleAccountPassword($parameters, $session),
@@ -105,6 +106,84 @@ class DialogflowHandler extends Controller
     /* ========================================================
      *               FUNGSI PENDAFTARAN AKUN
      * ======================================================== */
+    protected function handleCreateAccount(array $parameters, string $session)
+    {
+        $collectedParams = $this->getSessionDataBuatAkun($session, 'collected_account_params') ?? [];
+
+        $allParams = array_merge($collectedParams, $parameters);
+
+        // Define the required parameter keys
+        $requiredParams = ['nama', 'email', 'password'];
+
+        $missingParams = [];
+        foreach ($requiredParams as $param) {
+            if (empty($allParams[$param])) {
+                $missingParams[] = $param;
+            }
+        }
+
+        if (empty($missingParams)) {
+            // Clear the stored data after account creation if needed
+            $richContent[] =
+                [
+                    'type' => 'description',
+                    'title' => "Berikut data akun anda",
+                    'text' => [
+                        "Nama :" . $allParams['nama'],
+                        "Email: " . $allParams['email'],
+                        "Password: " . $allParams['password']
+                    ],
+                ];
+
+            $nextIntents = ['buatAkun_context','buatAkun_verifikasi'];
+            foreach ($nextIntents as $intent) {
+                $contexts[] = [
+                    'name' => $session . '/contexts/' . $intent,
+                    'lifespanCount' => 1
+                ];
+            }
+
+            return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            'richContent' => [
+                                $richContent,
+                            [
+                                [
+                                    'type' => 'info',
+                                    'subtitle' => ["Semua data sudah lengkap, apakah anda yakin ingin membuat akun ?"]
+                                ]
+                            ]
+                        ]
+
+                        ]
+                    ]
+                ],
+                'outputContexts' => $contexts
+            ];
+        }
+
+        $this->saveSessionDataBuatAkun($session, 'collected_account_params', $allParams);
+
+        // NOW, guide the user to the next missing field.
+        if (in_array('nama', $missingParams)) {
+            $context = ["buatAkun_context","buatAkun_nama"];
+            return $this->createContextResponse("Tentu, mari kita buat akun baru. Masukkan nama Anda:", $context, $session);
+        }
+        elseif (in_array('email', $missingParams)) {
+            $context = ["buatAkun_context","buatAkun_email"];
+            // You can personalize this since you know their name!
+            $name = $allParams['nama'] ?? '';
+            $response = "Terima kasih" . ($name ? ", $name" : "") . ". Sekarang, masukkan alamat email Anda:";
+            return $this->createContextResponse($response, $context, $session);
+        }
+        elseif (in_array('password', $missingParams)) {
+            $context = ["buatAkun_context","buatAkun_password"];
+            return $this->createContextResponse("Terima kasih. Terakhir, buat kata sandi untuk akun Anda:", $context, $session);
+        }
+    }
+
     protected function handleAccountName(array $parameters, string $session)
     {
         $name = data_get($parameters, 'person.0.name', '');
@@ -113,17 +192,12 @@ class DialogflowHandler extends Controller
             return $this->createContextResponse(
                 "Nama terlalu pendek, minimal 3 karakter. Masukkan nama lagi:",
 
-                ['buatAkun_nama'],
+                ['buatAkun_context','buatAkun_nama'],
                 $session,
             );
         }
         $this->saveSessionData($session, ['name' => $name]);
-        return $this->createContextResponse(
-            "Nama disimpan. Sekarang masukkan email Anda:",
-
-            ['buatAkun_email'],
-            $session,
-        );
+        return $this->handleCreateAccount(['nama' => $name], $session);
     }
 
     protected function handleAccountEmail(array $parameters, string $session)
@@ -133,7 +207,7 @@ class DialogflowHandler extends Controller
             return $this->createContextResponse(
                 "Format email tidak valid. Masukkan email lagi:",
 
-                ['buatAkun_email'],
+                ['buatAkun_context','buatAkun_email'],
                 $session
             );
         }
@@ -141,17 +215,12 @@ class DialogflowHandler extends Controller
             return $this->createContextResponse(
                 "Email sudah terdaftar. Masukkan email lain:",
 
-                ['buatAkun_email'],
+                ['buatAkun_context','buatAkun_email'],
                 $session
             );
         }
         $this->saveSessionData($session, ['email' => $email]);
-        return $this->createContextResponse(
-            "Email disimpan. Sekarang buat password minimal 6 karakter:",
-
-            ['buatAkun_password'],
-            $session
-        );
+        return $this->handleCreateAccount(['email' => $email], $session);
     }
 
     protected function handleAccountPassword(array $parameters, string $session)
@@ -161,19 +230,12 @@ class DialogflowHandler extends Controller
             return $this->createContextResponse(
                 "Password terlalu pendek. Masukkan password lagi:",
 
-                ['buatAkun_password'],
+                ['buatAkun_context','buatAkun_password'],
                 $session,
             );
         }
         $this->saveSessionData($session, ['password' => $password]);
-        $data = $this->getSessionData($session);
-        $preview = "Nama: {$data['name']}\nEmail: {$data['email']}\nPassword: {$password}";
-        return $this->createContextResponse(
-            "Berikut data akun Anda:\n$preview\nApakah sudah benar? (yes/no)",
-
-            ['buatAkun_konfirmasi'],
-            $session
-        );
+        return $this->handleCreateAccount(['password' => $password], $session);
     }
 
     protected function handleAccountConfirmation(array $parameters, string $session)
@@ -191,10 +253,12 @@ class DialogflowHandler extends Controller
         User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'password' => $data['password'],
             'role' => 'pelanggan',
             'status' => 'aktif'
         ]);
+
+        $this->clearSessionDataBuatAkun($session, 'collected_account_params');
         return $this->createTextResponse("Akun berhasil dibuat untuk {$data['name']}. Silakan login!");
     }
 
@@ -205,6 +269,74 @@ class DialogflowHandler extends Controller
     {
         if ($this->isAnonymous) {
             return $this->createLoginRequiredResponse('membuat keluhan');
+        }
+
+        $collectedParams = $this->getSessionDataBuatAkun($session, 'collected_account_params') ?? [];
+
+        $allParams = array_merge($collectedParams, $parameters);
+
+        // Define the required parameter keys
+        $requiredParams = ['judul', 'deskripsi'];
+
+        $missingParams = [];
+        foreach ($requiredParams as $param) {
+            if (empty($allParams[$param])) {
+                $missingParams[] = $param;
+            }
+        }
+
+        if (empty($missingParams)) {
+            // Clear the stored data after account creation if needed
+            $richContent[] =
+                [
+                    'type' => 'description',
+                    'title' => "Berikut data keluhan anda",
+                    'text' => [
+                        "Judul :" . $allParams['judul'],
+                        "Deskripsi: " . $allParams['deskripsi'],
+                    ],
+                ];
+
+            $nextIntents = ['buatKeluhan_context','buatKeluhan_verifikasi'];
+            foreach ($nextIntents as $intent) {
+                $contexts[] = [
+                    'name' => $session . '/contexts/' . $intent,
+                    'lifespanCount' => 1
+                ];
+            }
+
+            return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            'richContent' => [
+                                $richContent,
+                            [
+                                [
+                                    'type' => 'info',
+                                    'subtitle' => ["Semua data sudah lengkap, apakah anda yakin ingin membuat Keluhan ?"]
+                                ]
+                            ]
+                        ]
+
+                        ]
+                    ]
+                ],
+                'outputContexts' => $contexts
+            ];
+        }
+
+        $this->saveSessionDataBuatAkun($session, 'collected_account_params', $allParams);
+
+        // NOW, guide the user to the next missing field.
+        if (in_array('judul', $missingParams)) {
+            $context = ["buatKeluhan_context","buatKeluhan_judul"];
+            return $this->createContextResponse("Tentu, mari kita buat keluhan. Apa inti permasalahan anda ?", $context, $session);
+        }
+
+        elseif (in_array('deskripsi', $missingParams)) {
+            $context = ["buatKeluhan_context","buatDeskripsi_deskripsi"];
+            return $this->createContextResponse("Terima kasih. Coba jelaskan lebih rinci terkait keluhan Anda ini.", $context, $session);
         }
     }
 
@@ -223,11 +355,7 @@ class DialogflowHandler extends Controller
             );
         }
         $this->saveSessionData($session, ['judul' => $judul]);
-        return $this->createContextResponse(
-            "Judul disimpan. Sekarang masukkan deskripsi keluhan Anda:",
-            ['buatKeluhan_deskripsi'],
-            $session,
-        );
+        return $this->handleComplaint(['judul' => $judul], $session);
     }
 
     protected function handleComplaintDescription(array $parameters, string $session)
@@ -242,14 +370,7 @@ class DialogflowHandler extends Controller
             );
         }
         $this->saveSessionData($session, ['deskripsi' => $deskripsi]);
-        $data = $this->getSessionData($session);
-        $preview = "Judul: {$data['judul']}\nDeskripsi: {$deskripsi}";
-        return $this->createContextResponse(
-            "Berikut keluhan Anda:\n$preview\nApakah sudah benar? (yes/no)",
-
-            ['buatKeluhan_konfirmasi'],
-            $session
-        );
+        return $this->handleComplaint(['deskripsi' => $deskripsi], $session);
     }
 
     protected function handleComplaintConfirmation(array $parameters, string $session)
@@ -878,6 +999,36 @@ class DialogflowHandler extends Controller
             ],
         ];
     }
+
+    //SESSION HANDLER UNTUK PEMBUATAN AKUN
+    protected function saveSessionDataBuatAkun(string $session, string $key, array $data): void
+    {
+        $cacheKey = 'dialogflow_' . $session;
+        $currentData = cache()->get($cacheKey, []);
+
+        // Simpan data di dalam array berkey
+        $currentData[$key] = array_merge($currentData[$key] ?? [], $data);
+
+        cache()->put($cacheKey, $currentData, 300); // 300 detik = 5 menit
+    }
+
+    protected function getSessionDataBuatAkun(string $session, string $key): array
+    {
+        $cacheKey = 'dialogflow_' . $session;
+        $sessionData = cache()->get($cacheKey, []);
+        return $sessionData[$key] ?? [];
+    }
+
+    protected function clearSessionDataBuatAkun(string $session, string $key): void
+    {
+        $cacheKey = 'dialogflow_' . $session;
+        $sessionData = cache()->get($cacheKey, []);
+
+        unset($sessionData[$key]);
+
+        cache()->put($cacheKey, $sessionData, 300);
+    }
+
 
 
     protected function saveSessionData(string $session, array $data): void
