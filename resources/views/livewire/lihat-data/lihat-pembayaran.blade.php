@@ -16,7 +16,7 @@
         @if($tagihan)
             {{-- Header ID & Status Pembayaran --}}
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="mb-0">Tagihan ID: {{ $id }}</h3>
+                <h3 class="mb-0">Tagihan {{ $id }}</h3>
                 <span class="badge
                     @if($status == 'lunas') bg-success
                     @elseif($status == 'belum_lunas') bg-danger
@@ -28,41 +28,30 @@
             {{-- Grid Info --}}
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <h6>User ID</h6>
-                    <p class="text-muted">{{ $userId }}</p>
+                    <h6>Pengguna</h6>
+                    <p class="text-muted">{{ $userName }}</p>
                 </div>
                 <div class="col-md-6">
-                    <h6>Langganan ID</h6>
-                    <p class="text-muted">{{ $langganan }}</p>
+                    <h6>Langganan</h6>
+                    <p class="text-muted">{{ $paketName }}</p>
                 </div>
             </div>
 
             <div class="row mb-3">
-                <div class="col-md-6">
-                    <h6>Metode Pembayaran</h6>
-                    <p class="text-muted">{{ $metode }}</p>
-                </div>
                 <div class="col-md-6">
                     <h6>Jumlah Tagihan</h6>
                     <p class="text-muted">Rp {{ number_format($jumlah, 0, ',', '.') }}</p>
                 </div>
-            </div>
-
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <h6>Tanggal Jatuh Tempo</h6>
                     <p class="text-muted">{{ formatTanggalIndonesia($jatuhTempo) }}</p>
-                </div>
-                <div class="col-md-6">
-                    <h6>Periode Tagihan</h6>
-                    <p class="text-muted">{{ $periode }}</p>
                 </div>
             </div>
 
             {{-- Tanggal Dibuat dan Update --}}
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <h6>Dibuat Pada</h6>
+                    <h6>Berlangganan Pada</h6>
                     <p class="text-muted">{{ formatTanggalIndonesia($created) }}</p>
                 </div>
                 <div class="col-md-6">
@@ -72,7 +61,8 @@
             </div>
 
             {{-- Tombol Edit --}}
-            <div class="text-end">
+            @if ($tagihan->status_pembayaran !== 'lunas' && Auth::user()->role !== 'admin')
+            <div class="text-start">
                 <button
                     wire:click="bayar"
                     class="btn btn-success"
@@ -80,6 +70,16 @@
                     Bayar Tagihan
                 </button>
             </div>
+            @endif
+            <div class="text-start">
+                <button
+                    wire:click="struk"
+                    class="btn btn-info"
+                    >
+                    Download Invoice
+                </button>
+            </div>
+
 
             {{-- Modal Edit Tagihan --}}
             <div wire:ignore.self class="modal fade" id="editTagihanModal" tabindex="-1" aria-hidden="true">
@@ -153,3 +153,16 @@
         @endif
     </div>
 </div>
+
+<script>
+    window.addEventListener('download-struk', event => {
+        window.open(event.detail.url, '_blank'); // buka tab baru
+        // atau pakai force download:
+        // let a = document.createElement('a');
+        // a.href = event.detail.url;
+        // a.download = '';
+        // document.body.appendChild(a);
+        // a.click();
+        // a.remove();
+    });
+</script>

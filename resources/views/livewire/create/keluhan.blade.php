@@ -26,8 +26,8 @@
                     @error('tiket.category') <small class="text-danger">{{ $message }}</small> @enderror
                 </div> --}}
                 <div class="mb-3">
-                    <label class="form-label">Apa Keluhan Anda ?</label>
-                    <input type="text" wire:model.defer="tiket.category" class="form-control border border-2 p-2" placeholder="Tuliskan keluhan anda...">
+                    <label class="form-label">Sebutkan kategori keluhan anda</label>
+                    <input type="text" placeholder="Gangguan Internet" wire:model.defer="tiket.category" class="form-control border border-2 p-2">
                     @error('tiket.category') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 

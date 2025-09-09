@@ -10,6 +10,10 @@
                                 <h6 class="text-white col text-capitalize ps-3">Tugas Keluhan</h6>
                                 <div class="col text-end">
                                      <!-- Button trigger modal -->
+                                    <button data-bs-toggle="modal"
+                    data-bs-target="#editModal" class="btn bg-gradient-info">
+                                        Cantumkan Teknisi Penanggung Jawab
+                                    </button>
                                     <button wire:click="redirectToWhatsAppPelanggan" class="btn bg-gradient-info">
                                         Hubungi Pelanggan
                                     </button>
@@ -101,4 +105,48 @@
                 </div>
             </div>
         </div>
+
+
+        {{-- Modal Edit Karyawan --}}
+            <div wire:ignore.self class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+
+                        {{-- Header Modal --}}
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Data Karyawan</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        {{-- Body Modal --}}
+                        <div class="modal-body">
+                            <form wire:submit.prevent="updateTeknisi">
+                                <div class="row">
+                                    <!-- Nama -->
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">Nama</label>
+                                        <input wire:model.defer="name" type="text" class="form-control border border-2 p-2" placeholder="Masukkan nama lengkap">
+                                        @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+
+                                    <!-- No HP -->
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">No HP</label>
+                                        <input wire:model.defer="phone" type="text" class="form-control border border-2 p-2" placeholder="+6281234567890"
+                                            oninput="if(!this.value.startsWith('+62')) this.value = '+62' + this.value.replace(/^(\+62|62|0)*/, '');">
+                                        @error('phone') <small class="text-danger">{{ $message }}</small> @enderror
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        {{-- Footer Modal --}}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn bg-gradient-dark" wire:click="updateEdit">Submit</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
     </div>

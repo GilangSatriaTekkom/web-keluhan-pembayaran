@@ -9,12 +9,15 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "barryvdh/laravel-dompdf": "^3.1",
         "guzzlehttp/guzzle": "^7.4",
         "jantinnerezo/livewire-alert": "^4.0",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.6",
+        "laraveldaily/laravel-invoices": "^4.1",
         "livewire/livewire": "^3.0",
+        "maatwebsite/excel": "^3.1",
         "midtrans/midtrans-php": "^2.6"
     },
     "require-dev": {

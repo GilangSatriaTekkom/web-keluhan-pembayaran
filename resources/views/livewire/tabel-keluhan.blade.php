@@ -9,12 +9,34 @@
                     <div class="card my-4">
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                             <div class="bg-gradient-primary row shadow-primary border-radius-lg pt-4 pb-3">
-                                <h6 class="text-white col text-capitalize ps-3">Keluhan Aktif</h6>
-                                <div class="col text-end">
-                                     <!-- Button trigger modal -->
-                                    <a href="{{ route('tabel-keluhan.tambah') }}" class="btn bg-gradient-info">
-                                        Buat Keluhan
-                                    </a>
+                                <div class="left-wrap">
+                                    <h6 class="text-white col text-capitalize ps-3">Keluhan Aktif</h6>
+                                    <div class="col " style="height: fit-content;">
+                                        <button wire:click="exportExcel" class="btn col btn-info" style="margin-bottom: unset;" data-toggle="modal" data-target="#modalTambahKaryawan">
+                                            <i class="fas fa-user-plus"></i> Rekap Bulanan
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-8 text-end" style="margin-right: 20px;">
+                                    <div class="row mb-3" style="gap: 12px; display: flex;">
+                                        <!-- Button trigger modal -->
+                                        <a href="{{ route('tabel-keluhan.tambah') }}" class="btn col bg-gradient-info" style="margin-bottom: 0px;">
+                                            Buat Keluhan
+                                        </a>
+
+                                        <div class="col-md-5" style="background-color: white; border-radius: 999px;">
+                                            <input type="text" wire:model.live.debounce.300ms="searchAktif"
+                                                class="form-control"
+                                                placeholder="Cari tiket, customer, atau kategori...">
+                                        </div>
+                                        <div class="col-md" style="background-color: white; border-radius: 999px;">
+                                            <input type="date" wire:model.live="tanggalAktif" class="form-control">
+                                        </div>
+
+                                    </div>
+
+
                                 </div>
 
                             </div>
@@ -45,12 +67,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if($tiket->isEmpty())
+                                        @if($tiketAktif->isEmpty())
                                             <tr>
                                                 <td colspan="6" class="text-center">Tidak ada keluhan aktif</td>
                                             </tr>
                                         @else
-                                            @foreach($tiket as $t)
+                                            @foreach($tiketAktif as $t)
                                                 @if($t->status !== 'selesai')
                                                     <tr>
                                                         <td>
@@ -68,7 +90,7 @@
                                                             <span class="text-sm font-weight-bold mb-0">{{ formatTanggalIndonesia($t->created_at) }}</span>
                                                         </td>
                                                         <td class="align-middle text-center">
-                                                            <span class="badge badge-sm bg-gradient-success">{{ $t->status }}</span>
+                                                            <span class="badge badge-sm {{ $t->status == 'menunggu' ? 'bg-gradient-danger' : 'bg-gradient-warning'}}">{{ $t->status }}</span>
                                                         </td>
                                                         <td class="align-middle text-center">
                                                             <a href="{{ route('lihat.keluhan', ['id' => $t->id]) }}"
@@ -84,6 +106,9 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="p-3">
+                                {{ $tiketAktif->links() }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -92,8 +117,23 @@
                 <div class="col-12">
                     <div class="card my-4">
                         <div class="card-header p-0 position-relative flex flex-row justify-between mt-n4 mx-3 z-index-2">
-                            <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                                <h6 class="text-white text-capitalize ps-3">Riwayat Keluhan</h6>
+                            <div class="bg-gradient-primary row shadow-primary border-radius-lg pt-4 pb-3">
+                                <h6 class="text-white col text-capitalize ps-3">Riwayat Keluhan</h6>
+
+                                <div class="col-6 text-end">
+                                    <div class="row mb-3" style="gap: 12px; display: flex;">
+                                        <div class="col-md-7 " style="background-color: white; border-radius: 999px;">
+                                            <input type="text" wire:model.live.debounce.300ms="searchSelesai"
+                                                class="form-control"
+                                                placeholder="Cari tiket, customer, atau kategori...">
+                                        </div>
+                                        <div class="col-md-4" style="background-color: white; border-radius: 999px;">
+                                            <input type="date" wire:model.live="tanggalSelesai" class="form-control">
+                                        </div>
+                                    </div>
+
+
+                                </div>
                             </div>
                         </div>
                         <div class="card-body px-0 pb-2">
@@ -122,12 +162,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if($tiket->isEmpty())
+                                        @if($tiketSelesai->isEmpty())
                                             <tr>
                                                 <td colspan="6" class="text-center">Tidak ada Riwayat Keluhan</td>
                                             </tr>
                                         @else
-                                            @foreach($tiket as $t)
+                                            @foreach($tiketSelesai as $t)
                                                 @if($t->status === 'selesai')
                                                     <tr >
                                                         <td>
@@ -160,6 +200,9 @@
                                         @endif
                                     </tbody>
                                 </table>
+                            </div>
+                            <div class="p-3">
+                                {{ $tiketSelesai->links() }}
                             </div>
                         </div>
                     </div>

@@ -4,9 +4,15 @@ namespace App\Http\Livewire\LihatData;
 
 use Livewire\Component;
 use App\Models\Tagihan;
+use App\Models\Langganan;
+use App\Models\PaketInternet as Paket;
 use App\Models\User;
 use Midtrans\Snap;
 use Midtrans\Config;
+use App\Services\strukPembayaran;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Log;
 
 
 class LihatPembayaran extends Component
@@ -22,17 +28,25 @@ class LihatPembayaran extends Component
     public $created;
     public $updated;
     public $tagihan;
+    public $userName;
+    public $langgananName;
+    public $clientKey;
     public $user;
+    public $paketName;
 
     public $snapToken;
 
     public function mount($id)
     {
         $tagihan = Tagihan::findOrFail($id);
+        $langganan = Langganan::where('id', $tagihan->langganan_id)->first();
+        $paket = Paket::where('id', $langganan->paket_id)->first();
         $this->status = $tagihan->status_pembayaran;
         $this->id    = $tagihan->id;
         $this->userId   = $tagihan->user_id;
+        $this->userName = $tagihan->user->name;
         $this->langganan  = $tagihan->langganan_id;
+        $this->paketName  = $paket->nama_paket;
         $this->metode   = $tagihan->metode_pembayaran;
         $this->jumlah  = $tagihan->jumlah_tagihan;
         $this->jatuhTempo  = $tagihan->tgl_jatuh_tempo;
@@ -79,7 +93,7 @@ class LihatPembayaran extends Component
             $this->snapToken = Snap::getSnapToken($params);
         } catch (\Exception $e) {
             $this->dispatch('midtrans-error', ['message' => $e->getMessage()]);
-            \Log::error('Midtrans Error: ' . $e->getMessage(), $params);
+            Log::error('Midtrans Error: ' . $e->getMessage(), $params);
         }
     }
 
@@ -93,8 +107,25 @@ class LihatPembayaran extends Component
         $this->dispatch('midtrans-pay', snapToken: $this->snapToken);
     }
 
+    public function struk(strukPembayaran $invoiceService)
+    {
+
+        // Cari data tagihan
+        $pembayaran = Tagihan::findOrFail($this->id);
+
+        $fileName = 'struk_' . $pembayaran->id . '.pdf';
+
+        // Generate invoice
+        $invoiceService->generate($pembayaran, $fileName);
+
+        return Storage::disk('invoices')->download($fileName);
+    }
+
+
     public function render()
     {
-        return view('livewire.lihat-data.lihat-pembayaran');
+        return view('livewire.lihat-data.lihat-pembayaran', [
+            'tagihan' => $this->tagihan,
+        ]);
     }
 }

@@ -18,6 +18,8 @@ class TasksKeluhan extends Component
     public $tasks;
     public $newTask = '';
     public $taskId;
+    public $name;
+    public $phone;
 
     public function redirectToWhatsApp()
     {
@@ -28,7 +30,7 @@ class TasksKeluhan extends Component
             return;
         }
 
-        $phoneNumber = '6289609875689';
+        $phoneNumber = Tiket::where('id', $this->complaintId)->value('phone_teknisi');
 
         $message = "Halo, ada keluhan dari pelanggan:\n\n"
                 . "ID Keluhan: {$complaint->id}\n"
@@ -177,6 +179,29 @@ class TasksKeluhan extends Component
         unset($this->tasks[$index]);
         $this->tasks = array_values($this->tasks); // Reindex array
         $this->saveTasks();
+    }
+
+    public function updateEdit() {
+         LivewireAlert::title("Perhatian")
+            ->text("Apakah Anda yakin ingin menambah penanggung jawab teknisi di keluhan ini ?")
+            ->question()
+            ->asConfirm()
+            ->onConfirm("updateTeknisi")
+            ->show();
+    }
+
+    public function updateTeknisi()
+    {
+        Tiket::where('id', $this->complaintId)->update([
+            'nama_teknisi_menangani' => $this->name,
+            'phone_teknisi' => $this->phone,
+        ]);
+
+        Log::info("testing", [$this->name, $this->phone, $this->complaintId]);
+        LivewireAlert::title("Data Berhasil diperbarui")
+            ->success()
+            ->withConfirmButton('Ok!')
+            ->show();
     }
 
     // Save all tasks to database

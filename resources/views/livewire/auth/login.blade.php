@@ -11,7 +11,7 @@
                                             <span class="font-weight-normal">Email:</span> admin@material.com
                                             <br>
                                             <span class="font-weight-normal">Password:</span> secret</h6>
-                                        <div class="col-2 text-center ms-auto">
+                                        {{-- <div class="col-2 text-center ms-auto">
                                             <a class="btn btn-link px-3" href="javascript:;">
                                                 <i class="fa fa-facebook text-white text-lg"></i>
                                             </a>
@@ -25,7 +25,7 @@
                                             <a class="btn btn-link px-3" href="javascript:;">
                                                 <i class="fa fa-google text-white text-lg"></i>
                                             </a>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </div>
                             </div>

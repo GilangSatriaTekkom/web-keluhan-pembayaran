@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('category');
             $table->enum('status', ['menunggu', 'selesai', 'proses'])->default('menunggu');
             $table->text('description');
+            $table->foreignId('cs_menangani')->nullable()->constrained('users')->onDelete('cascade');
+            $table->string('nama_teknisi_menangani')->nullable();
+            $table->string('phone_teknisi')->nullable();
             $table->timestamps();
         });
     }

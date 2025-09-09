@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Tiket;
 use App\Models\Tagihan;
+use App\Models\Langganan;
+use App\Models\PaketInternet;
 use Midtrans\Snap;
 use Midtrans\Config;
 use Illuminate\Support\Carbon;
@@ -74,6 +76,7 @@ class DialogflowHandler extends Controller
             'CekTagihan_filter'    => $this->handleBillListFilter($parameters, $session),
 
 
+
             default => $this->defaultResponse()
         };
     }
@@ -113,7 +116,7 @@ class DialogflowHandler extends Controller
         $allParams = array_merge($collectedParams, $parameters);
 
         // Define the required parameter keys
-        $requiredParams = ['nama', 'email', 'password'];
+        $requiredParams = ['person', 'email', 'password'];
 
         $missingParams = [];
         foreach ($requiredParams as $param) {
@@ -124,12 +127,16 @@ class DialogflowHandler extends Controller
 
         if (empty($missingParams)) {
             // Clear the stored data after account creation if needed
+            $this->saveSessionDataBuatAkun($session, 'collected_account_params', $allParams);
+
+            $nama = is_array($allParams['person']) ? ($allParams['person']['name'] ?? '') : $allParams['person'];
+
             $richContent[] =
                 [
                     'type' => 'description',
                     'title' => "Berikut data akun anda",
                     'text' => [
-                        "Nama :" . $allParams['nama'],
+                        "Nama :" . $nama,
                         "Email: " . $allParams['email'],
                         "Password: " . $allParams['password']
                     ],
@@ -167,7 +174,7 @@ class DialogflowHandler extends Controller
         $this->saveSessionDataBuatAkun($session, 'collected_account_params', $allParams);
 
         // NOW, guide the user to the next missing field.
-        if (in_array('nama', $missingParams)) {
+        if (in_array('person', $missingParams)) {
             $context = ["buatAkun_context","buatAkun_nama"];
             return $this->createContextResponse("Tentu, mari kita buat akun baru. Masukkan nama Anda:", $context, $session);
         }
@@ -196,8 +203,8 @@ class DialogflowHandler extends Controller
                 $session,
             );
         }
-        $this->saveSessionData($session, ['name' => $name]);
-        return $this->handleCreateAccount(['nama' => $name], $session);
+        $this->saveSessionData($session, ['person' => $name]);
+        return $this->handleCreateAccount(['person' => $name], $session);
     }
 
     protected function handleAccountEmail(array $parameters, string $session)
@@ -242,24 +249,41 @@ class DialogflowHandler extends Controller
     {
         $yesNo = strtolower($parameters['yes_no'] ?? '');
         if ($yesNo !== 'yes') {
-            return $this->createContextResponse(
-                "Pendaftaran dibatalkan. Mau coba lagi? Masukkan nama Anda:",
+            $this->clearSessionDataBuatAkun($session, 'collected_account_params');
+            return $this->createTextResponse("Pendaftaran dibatalkan.");
+        }
 
-                ['buatAkun_nama'],
+        $data = $this->getSessionDataBuatAkun($session, 'collected_account_params') ?? [];
+
+
+        Log::info("All parameters:" . json_encode($data));
+
+        // $data = $this->getSessionData($session);
+
+        // Sesuaikan key dengan bentuk data
+        $nama = $data['person']['name'] ?? ($data['person'] ?? '');
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+
+        if (User::where('email', $email)->exists()) {
+            return $this->createContextResponse(
+                "Email sudah terdaftar. Masukkan email lain:",
+
+                ['buatAkun_context','buatAkun_email'],
                 $session
             );
         }
-        $data = $this->getSessionData($session);
+
         User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
+            'name' => $nama,
+            'email' => $email,
+            'password' => $password,
             'role' => 'pelanggan',
             'status' => 'aktif'
         ]);
 
         $this->clearSessionDataBuatAkun($session, 'collected_account_params');
-        return $this->createTextResponse("Akun berhasil dibuat untuk {$data['name']}. Silakan login!");
+        return $this->createTextResponse("Akun berhasil dibuat untuk {$nama}. Silakan login!");
     }
 
     /* ========================================================
@@ -292,7 +316,7 @@ class DialogflowHandler extends Controller
                     'type' => 'description',
                     'title' => "Berikut data keluhan anda",
                     'text' => [
-                        "Judul :" . $allParams['judul'],
+                        "Kategori :" . $allParams['judul'],
                         "Deskripsi: " . $allParams['deskripsi'],
                     ],
                 ];
@@ -331,7 +355,7 @@ class DialogflowHandler extends Controller
         // NOW, guide the user to the next missing field.
         if (in_array('judul', $missingParams)) {
             $context = ["buatKeluhan_context","buatKeluhan_judul"];
-            return $this->createContextResponse("Tentu, mari kita buat keluhan. Apa inti permasalahan anda ?", $context, $session);
+            return $this->createContextResponse('Tentu, mari kita buat keluhan. tuliskan Kategori keluhan ! misalkan "gangguan internet" ', $context, $session);
         }
 
         elseif (in_array('deskripsi', $missingParams)) {
@@ -377,10 +401,8 @@ class DialogflowHandler extends Controller
     {
         $yesNo = strtolower($parameters['yes_no'] ?? '');
         if ($yesNo !== 'yes') {
-            return $this->createContextResponse(
-                "Keluhan dibatalkan. Masukkan judul keluhan lagi:",
-                ['buatKeluhan_judul'],
-                $session
+            return $this->createTextResponse(
+                "Pembuatan Keluhan dibatalkan"
             );
         }
         $data = $this->getSessionData($session);
@@ -399,9 +421,9 @@ class DialogflowHandler extends Controller
 
     protected function handleBillPayment(array $parameters, string $session)
     {
-        // if ($this->isAnonymous) {
-        //     return $this->createLoginRequiredResponse('membayar tagihan');
-        // }
+        if ($this->isAnonymous) {
+            return $this->createLoginRequiredResponse('membayar tagihan');
+        }
         $nonEmptyParams = array_filter($parameters);
 
         if ($nonEmptyParams) {
@@ -413,12 +435,12 @@ class DialogflowHandler extends Controller
 
     protected function handleBillPaymentFilter(array $parameters, string $session)
     {
-        // if ($this->isAnonymous) {
-        //     return $this->createLoginRequiredResponse('membayar tagihan');
-        // }
+        if ($this->isAnonymous) {
+            return $this->createLoginRequiredResponse('membayar tagihan');
+        }
 
-        // $userId = $this->userId;
-        $userId = 10;
+        $userId = $this->userId;
+        // $userId = 23;
 
         $query = Tagihan::query()->where('user_id', $userId)->where('status_pembayaran', 'belum_lunas');
 
@@ -436,6 +458,22 @@ class DialogflowHandler extends Controller
         // Filter berdasarkan id keluhan
         if (!empty($parameters['idTagihan'])) {
             $query->where('id', $parameters['idTagihan']);
+        }
+
+        if (!empty($parameters['paket_internet'])) {
+            $idPaket = PaketInternet::where('nama_paket', $parameters['paket_internet'])->value('id');
+            Log::info("Filtering by paket_internet: " . $parameters['paket_internet'] . ", idPaket: " . $idPaket);
+
+            if ($idPaket) {
+                $langgananIds = Langganan::where('paket_id', $idPaket)
+                    ->where('user_id', $this->userId)
+                    ->pluck('id');
+
+                if ($langgananIds->isNotEmpty()) {
+                    $query->where('langganan_id', $langgananIds);
+                    Log::info("Filtered by paket_internet, langgananIds: " . json_encode($langgananIds));
+                }
+            }
         }
 
         // Filter berdasarkan filterCekKeluhan (custom logic, misal status)
@@ -497,9 +535,47 @@ class DialogflowHandler extends Controller
                 ];
         }
 
-
-
         Log::info("bills" . json_encode($bills));
+
+        if (count($bills) > 1) {
+            // ambil id tiap bills untuk chips
+            $billIds = $bills->pluck('id')->toArray();
+
+            // buat chips dari billIds
+            $chips = $this->createChipsResponse($billIds);
+
+            return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            'richContent' => [
+                                $richContent,
+                            [
+                                [
+                                    'type' => 'info',
+                                    'subtitle' => ["Ada " . count($bills) . " tagihan yang bisa dibayar. Silakan pilih salah satu."]
+                                ]
+                                ],
+                            $chips['fulfillmentMessages'][0]['payload']['richContent'][0],
+                        ]
+
+                        ]
+                    ]
+                ],
+                'outputContexts' => [
+                    [
+                        'name' => $session . '/contexts/bayarTagihan_filter',
+                        'lifespanCount' => 1,
+                    ],
+                    [
+                        'name' => $session . '/contexts/bayarTagihan_context',
+                        'lifespanCount' => 1,
+                    ]
+                ]
+
+            ];
+        //    return $this->createContextResponse("Pilih salah satu tagihan yang ingin dibayar", ["bayarTagihan_filter", "bayarTagihan_context"], $session);
+        }
 
         return [
                 'fulfillmentMessages' => [
@@ -650,7 +726,7 @@ class DialogflowHandler extends Controller
         if ($nonEmptyParams) {
             return $this->handleComplaintListFilter($parameters, $session);
         } else {
-            return $this->createContextResponse("Tentu, Keluhan mana yang ingin anda lihat ?", ["cekKeluhan_filter", "cekKeluhan_context"], $session);
+            return $this->createContextResponse("Tentu, Keluhan mana yang ingin anda lihat ?", ["cekKeluhan", "cekKeluhan_context"], $session);
         }
 
     }
@@ -679,11 +755,34 @@ class DialogflowHandler extends Controller
             $query->whereDate('created_at', \Carbon\Carbon::parse($parameters['tanggal'])->format('Y-m-d'));
         }
 
-        // Filter berdasarkan bulan (custom entity)
-        if (!empty($parameters['bulan'])) {
-            $query->whereMonth('created_at', \Carbon\Carbon::parse($parameters['bulan'])->month);
-            $query->whereYear('created_at', \Carbon\Carbon::parse($parameters['bulan'])->year);
+        if (!empty($parameters['bulan']) || !empty($parameters['number']) || !empty($parameters['operator'])) {
+
+            // 1. Jika ada OPERATOR (>, <, =, dll)
+            if (!empty($parameters['operator'])) {
+                // Jika ada number, tambahkan ke tanggal sekarang
+                if (!empty($parameters['number'])) {
+                    $targetDate = now()->addMonths($parameters['number']);
+                } else {
+                    $targetDate = now();
+                }
+                $query->where('created_at', $parameters['operator'], $targetDate);
+            }
+
+            // 2. Jika ada NUMBER tanpa operator (misal: 2 bulan ke depan)
+            if (!empty($parameters['number']) && empty($parameters['operator'])) {
+                $startDate = now();
+                $endDate   = now()->addMonths($parameters['number']);
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            }
+
+            // 3. Jika ada BULAN spesifik (format bebas: Januari 2025 atau 2025-08)
+            if (!empty($parameters['bulan'])) {
+                $bulan = \Carbon\Carbon::parse($parameters['bulan']);
+                $query->whereMonth('created_at', $bulan->month)
+                    ->whereYear('created_at', $bulan->year);
+            }
         }
+
 
         // Filter berdasarkan id keluhan
         if (!empty($parameters['idKeluhan'])) {
@@ -755,6 +854,15 @@ class DialogflowHandler extends Controller
                         ]
                     ]
                 ]
+            ],
+            'outputContexts' => [
+                [
+                    'name' => $session . '/contexts/cekKeluhan',
+                    'lifespanCount' => 0,
+                    // 'parameters' => [
+                    //     'nomorTagihan' => $bills->pluck('id')->toArray()
+                    // ]
+                ]
             ]
         ];
     }
@@ -776,7 +884,7 @@ class DialogflowHandler extends Controller
         if ($nonEmptyParams) {
             return $this->handleBillListFilter($parameters, $session);
         } else {
-            return $this->createContextResponse("Tentu, Tagihan mana yang ingin anda lihat ?", ["CekTagihan_filter", "cekTagihan_context"], $session);
+            return $this->createContextResponse("Tentu, Tagihan mana yang ingin anda lihat ?", ["CekTagihan", "cekTagihan_context"], $session);
         }
 
     }
@@ -827,6 +935,9 @@ class DialogflowHandler extends Controller
                     case 'lama':
                         $query->oldest();
                         break;
+                    case 'nunggak':
+                        $query->where('tgl_jatuh_tempo', '<', now()->format('Y-m-d'));
+                        break;
                     case 'semua':
                         // Tidak perlu filter tambahan
                         break;
@@ -854,10 +965,10 @@ class DialogflowHandler extends Controller
         // (logika di atas sudah otomatis, karena query tetap kosong jika params kosong)
 
         // Bisa return data atau sesuaikan dengan kebutuhan
-        return $this->createCollectionTagihanTextResponse("Berikut list tagihan sesuai yang anda inginkan", $tagihan, $params);
+        return $this->createCollectionTagihanTextResponse("Berikut list tagihan sesuai yang anda inginkan", $tagihan, $params, $session);
     }
 
-    protected function createCollectionTagihanTextResponse(string $title, $collection, $param): array
+    protected function createCollectionTagihanTextResponse(string $title, $collection, $param, $session): array
     {
         // Jika collection kosong → beri pesan default
         if (empty($collection) || (is_object($collection) && method_exists($collection, 'isEmpty') && $collection->isEmpty())) {
@@ -920,6 +1031,15 @@ class DialogflowHandler extends Controller
                             ]
                         ]
                     ]
+                ]
+            ],
+            'outputContexts' => [
+                [
+                    'name' => $session . '/contexts/cekTagihan_context',
+                    'lifespanCount' => 0,
+                    // 'parameters' => [
+                    //     'nomorTagihan' => $bills->pluck('id')->toArray()
+                    // ]
                 ]
             ]
         ];
@@ -1046,6 +1166,27 @@ class DialogflowHandler extends Controller
 
     protected function defaultResponse(): array
     {
+        $textPart = $this->createTextResponse(
+            "Maaf, saya tidak mengerti pertanyaan Anda. Pertanyaan yang bisa kami jawab harus berkaitan dengan layanan yang kami sediakan dibawah."
+        );
+
+        $chipsPart = $this->createChipsResponse([
+            'Buat akun',
+            'Buat keluhan',
+            'Bayar tagihan',
+            'Cek keluhan',
+            'Cek tagihan',
+            'Hubungi CS',
+            'Pertanyaan layanan'
+        ]);
+
+        return [
+            'fulfillmentMessages' => array_merge(
+                $textPart['fulfillmentMessages'],
+                $chipsPart['fulfillmentMessages']
+            )
+        ];
+
         return $this->createTextResponse("Maaf, saya tidak mengerti pertanyaan Anda.");
     }
 
@@ -1107,5 +1248,28 @@ class DialogflowHandler extends Controller
         ];
     }
 
+    protected function normalizeDialogflowParam($param, $key = null)
+    {
+        // Kalau null langsung return kosong
+        if (empty($param)) {
+            return '';
+        }
+
+        // Kalau bentuknya array/object { "name": "..." }
+        if (is_array($param)) {
+            if ($key && isset($param[$key])) {
+                return $param[$key];
+            }
+            if (isset($param['name'])) {
+                return $param['name'];
+            }
+            return reset($param); // ambil nilai pertama
+        }
+
+        return $param; // sudah string biasa
+    }
+
+
 
 }
+

@@ -42,7 +42,10 @@ class LihatKeluhan extends Component
     public function prosesKeluhan()
     {
         Tiket::where('id', $this->complaintId)
-            ->update(['status' => 'proses']);
+            ->update([
+                'status' => 'proses',
+                'cs_menangani' => $this->authUserId,
+        ]);
        return redirect()->route('tasks.keluhan', ['id' => $this->complaintId]);
     }
 

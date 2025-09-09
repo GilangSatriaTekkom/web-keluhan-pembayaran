@@ -75,6 +75,8 @@ class Pelanggan extends Component
 
     public function updatePelangganDenganPaket()
     {
+
+
         User::findOrFail($this->user_id)->update([
             'name'               => $this->name,
             'email'              => $this->email,
@@ -82,6 +84,14 @@ class Pelanggan extends Component
             'phone'              => $this->phone,
             'status'             => $this->status,
         ]);
+
+        if (empty($this->phone) || empty($this->alamat)) {
+            LivewireAlert::title('Peringatan')
+                ->text('Masukan nomor hp dan alamat jika ingin berlangganan!')
+                ->warning()
+                ->show();
+            return;
+        }
 
         $langgananBaru = Langganan::create([
             'user_id' => $this->user_id,
@@ -110,6 +120,15 @@ class Pelanggan extends Component
         ]);
 
         if($gantiPaket) {
+
+            if (empty($this->phone) || empty($this->alamat)) {
+                LivewireAlert::title('Peringatan')
+                    ->text('Masukan nomor hp dan alamat jika ingin berlangganan!')
+                    ->warning()
+                    ->show();
+                return;
+            }
+
              Langganan::where('id', $this->langganan->id)->update([
                 'status_langganan'  => 'nonaktif'
             ]);

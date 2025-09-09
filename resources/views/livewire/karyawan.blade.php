@@ -3,10 +3,22 @@
         <div class="col-12">
             <div class="card my-4">
                 <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-                    <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-                        <h6 class="text-white mx-3"><strong>Data Karyawan</strong></h6>
-                        <div class="me-3 my-3 text-end">
-                            <livewire:components.button-form />
+                    <div class="bg-gradient-primary d-flex row shadow-primary border-radius-lg pt-4 pb-3" style="justify-content: space-between; align-items: center;">
+                        <h6 class="text-white col-2 mx-3"><strong>Data Karyawan</strong></h6>
+                        <div class="col-9 row text-end mb-3" style="margin-right: 18px; gap: 12px; display: flex;">
+                                <!-- Button trigger modal -->
+                            <div class="col " style="height: fit-content;">
+                                <livewire:components.button-form />
+                            </div>
+
+                            <div class="col-md" style="background-color: white; border-radius: 999px;">
+                                <input type="text" wire:model.live.debounce.300ms="searchAktif"
+                                    class="form-control"
+                                    placeholder="Cari tiket, customer, atau kategori...">
+                            </div>
+                            <div class="col-md-3" style="background-color: white; border-radius: 999px;">
+                                <input type="date" wire:model.live="tanggalAktif" class="form-control">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -15,7 +27,6 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NAMA</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">EMAIL</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">NO HP</th>
@@ -26,9 +37,6 @@
                             <tbody>
                                 @forelse ($karyawans as $karyawan)
                                     <tr >
-                                        <td class="px-3">
-                                            <p class="text-sm mb-0">{{ $karyawan->id }}</p>
-                                        </td>
                                         <td>
                                             <div class="d-flex flex-column justify-content-center">
                                                 <h6 class="mb-0 text-sm">{{ $karyawan->name }}</h6>
@@ -64,6 +72,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="p-3">
+                        {{ $karyawans->links() }}
                     </div>
                 </div>
             </div>

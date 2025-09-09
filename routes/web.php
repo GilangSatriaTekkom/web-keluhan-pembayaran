@@ -76,6 +76,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('tabel-pembayaran', TabelPembayaran::class)->name('tabel-pembayaran.index');
     Route::get('tabel-pembayaran/lihat/{id}', LihatPembayaran::class)->name('lihat.pembayaran');
+    Route::get('tabel-keluhan/tambah', KeluhanTambah::class)->name('tabel-keluhan.tambah');
 
     Route::get('/bayar-tagihan', function () {
         return view('bayar-tagihan'); // Blade ini extend base.php
@@ -100,7 +101,6 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::put('karyawan/update/{id}', [Karyawan::class, 'edit'])->name('karyawan.edit');
     Route::delete('karyawan/destroy/{id}', [Karyawan::class, 'destroy'])->name('karyawan.destroy');
 
-    Route::get('tabel-keluhan/tambah', KeluhanTambah::class)->name('tabel-keluhan.tambah');
     Route::put('tabel-keluhan/update/{id}', [Pelanggan::class, 'edit'])->name('tabel-keluhan.edit');
     Route::delete('tabel-keluhan/destroy/{id}', [Pelanggan::class, 'destroy'])->name('tabel-keluhan.destroy');
 
