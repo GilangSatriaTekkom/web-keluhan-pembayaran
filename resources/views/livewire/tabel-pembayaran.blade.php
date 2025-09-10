@@ -7,14 +7,17 @@
                     <div class="card my-4">
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                             <div class="bg-gradient-primary row shadow-primary border-radius-lg pt-4 pb-3">
-                                <div class="left-wrap">
+                                <div class="left-wrap col-6 row">
                                     <h6 class="text-white col text-capitalize ps-3">Tagihan Tertunda</h6>
-                                    <div class="col " style="height: fit-content;">
+                                    {{-- <div class="col " style="height: fit-content;">
                                         <button wire:click="exportExcel" class="btn col btn-info" style="margin-bottom: unset;" data-toggle="modal" data-target="#modalTambahKaryawan">
                                             <i class="fas fa-user-plus"></i> Rekap Bulanan
                                         </button>
-                                    </div>
+                                    </div> --}}
                                 </div>
+
+
+
 
                                 <div class="row col mb-3" style="gap: 12px; display: flex;">
                                     <div class="col-md-7" style="background-color: white; border-radius: 999px;">

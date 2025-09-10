@@ -34,7 +34,7 @@ class TabelPembayaran extends Component
     {
         $data = 'pembayaran';
         $rekap = new RekapExport($data);
-        return Excel::download($rekap->rekapPembayaran(), 'rekapPembayaran.xlsx');
+        return Excel::download($rekap, 'rekapPembayaran.xlsx');
     }
 
     public function exportPdf()

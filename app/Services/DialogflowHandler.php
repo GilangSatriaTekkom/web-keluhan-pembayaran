@@ -16,6 +16,7 @@ use App\Models\PaketInternet;
 use Midtrans\Snap;
 use Midtrans\Config;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class DialogflowHandler extends Controller
 {
@@ -33,6 +34,8 @@ class DialogflowHandler extends Controller
         $sessionId = Str::afterLast($session, '/');
         $queryText = $queryResult['queryText'] ?? '';
         $outputContexts = $queryResult['outputContexts'] ?? [];
+
+        $invoiceService = new \App\Services\StrukPembayaran();
 
         // Cek user login dari sessionId
         if (Str::startsWith($sessionId, 'user-')) {
@@ -75,6 +78,9 @@ class DialogflowHandler extends Controller
             'CekTagihan'    => $this->handleBillList($queryText, $parameters, $session),
             'CekTagihan_filter'    => $this->handleBillListFilter($parameters, $session),
 
+            'TagihanInvoice'    => $this->downloadInvoice($parameters, $session, $invoiceService),
+            'TagihanInvoice_filter'    => $this->downloadInvoice($parameters, $session, $invoiceService),
+
 
 
             default => $this->defaultResponse()
@@ -94,7 +100,7 @@ class DialogflowHandler extends Controller
             'Cek keluhan',
             'Cek tagihan',
             'Hubungi CS',
-            'Pertanyaan layanan'
+            'Download Invoice'
         ]);
 
         return [
@@ -102,6 +108,173 @@ class DialogflowHandler extends Controller
                 $textPart['fulfillmentMessages'],
                 $chipsPart['fulfillmentMessages']
             )
+        ];
+    }
+
+    protected function downloadInvoice(array $params, string $session, $invoiceService) {
+
+        if ($this->isAnonymous || $this->userId === null) {
+            return $this->createLoginRequiredResponse('cek tagihan');
+        }
+
+        $userId = $this->userId;
+        // $userId = 20;
+
+        // Inisialisasi query
+        $query = Tagihan::query()->where('user_id', $userId)->where('status_pembayaran', 'lunas');
+
+        // Filter berdasarkan periode (sys.date)
+        if (!empty($params['periode'])) {
+            // Jika periode berupa range (misal "2025-08"), bisa disesuaikan logikanya
+            $query->whereDate('periode', '=', Carbon::parse($params['periode'])->format('Y-m-d'));
+        }
+
+        // Filter berdasarkan status (custom entity)
+        if ($params['status'] == 'belum lunas') {
+            return $this->createTextResponse("Invoice hanya dapat mendownload tagihan yang lunas");
+        }
+
+        if (!empty($params['tanggal'])) {
+            $tanggal = $params['tanggal'] ?? null;
+
+            if ($tanggal) {
+                $query->whereDate('created_at', Carbon::parse($tanggal)->format('Y-m-d'));
+            }
+        }
+
+        if(!empty($params['filterTagihan'])) {
+            foreach ($params['filterTagihan'] as $filter) {
+                switch ($filter) {
+                    case 'bulan ini':
+                        $query->whereMonth('created_at', now()->month)
+                            ->whereYear('created_at', now()->year);
+                        break;
+                    case 'bulan kemarin':
+                        $query->whereMonth('created_at', now()->subMonth()->month)
+                            ->whereYear('created_at', now()->subMonth()->year);
+                        break;
+                    case 'lama':
+                        $query->oldest();
+                        break;
+                    case 'nunggak':
+                        $query->where('tgl_jatuh_tempo', '<', now()->format('Y-m-d'));
+                        break;
+                    case 'semua':
+                        // Tidak perlu filter tambahan
+                        break;
+                    default:
+                        // Jika tidak dikenali, abaikan
+                        break;
+                }
+            }
+        }
+        // Filter berdasarkan metode bayar
+        if (!empty($params['metode'])) {
+            $query->where('metode_bayar', $params['metode']);
+        }
+
+        // Filter berdasarkan id-tagihan
+        if (!empty($params['id-invoice'])) {
+            $query->where('id', $params['id-invoice']);
+        }
+
+        // Eksekusi query
+        $bills = $query->get();
+
+        if ($bills->isEmpty()) {
+            return $this->createTextResponse("Tidak ada invoice");
+        }
+
+        foreach ($bills as $bill) {
+            $richContent[] =
+                [
+                    'type' => 'description',
+                    'title' => "Tagihan #" . $bill->id,
+                    'text' => [
+                        "💵 Jumlah:" . formatRupiah($bill->jumlah_tagihan),
+                        "📅 Jatuh Tempo: " . $bill->tgl_jatuh_tempo,
+                        "🔄 Status: " . $this->getStatusBadge($bill->status_pembayaran)
+                    ],
+                    'icon' => [
+                        'type' => 'receipt',
+                        'color' => '#FF5722'
+                    ]
+                ];
+        }
+
+        Log::info("bills" . json_encode($bills));
+
+        if (count($bills) > 1) {
+            // ambil id tiap bills untuk chips
+            $billIds = $bills->pluck('id')->toArray();
+
+            // buat chips dari billIds
+            $chips = $this->createChipsResponse(
+                array_map(fn($id) => 'Invoice ' . $id, $billIds)
+            );
+
+            return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            'richContent' => [
+                                $richContent,
+                                [
+                                    [
+                                        'type' => 'info',
+                                        'subtitle' => ["Ada " . count($bills) . " tagihan yang punya invoice. Silakan pilih salah satu."]
+                                    ]
+                                ],
+                            $chips['fulfillmentMessages'][0]['payload']['richContent'][0],
+                        ]
+
+                        ]
+                    ]
+                ],
+                'outputContexts' => [
+                    [
+                        'name' => $session . '/contexts/tagihanInvoice_filter',
+                        'lifespanCount' => 1,
+                    ],
+                    [
+                        'name' => $session . '/contexts/tagihanInvoice_context',
+                        'lifespanCount' => 1,
+                    ]
+                ]
+
+            ];
+        //    return $this->createContextResponse("Pilih salah satu tagihan yang ingin dibayar", ["bayarTagihan_filter", "bayarTagihan_context"], $session);
+        }
+
+        $bill = $bills->first();
+
+        $fileName = 'struk_' . $bill->id . '.pdf';
+
+        // Generate invoice
+        $invoiceService->generate($bill, $fileName);
+
+        Storage::disk('invoices')->download($fileName);
+
+        return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            "richContent"=> [
+                                [
+                                    [
+                                        "text"=> "Download Invoice",
+                                        "icon"=> [
+                                            "type"=> "chevron_right",
+                                            "color"=> "#d3259fff"
+                                        ],
+                                        "type"=> "button",
+                                        "link"=> route('invoices.download', $fileName)
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
         ];
     }
 
@@ -1177,7 +1350,7 @@ class DialogflowHandler extends Controller
             'Cek keluhan',
             'Cek tagihan',
             'Hubungi CS',
-            'Pertanyaan layanan'
+            'Download Invoice'
         ]);
 
         return [

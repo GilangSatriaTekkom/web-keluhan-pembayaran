@@ -17,4 +17,9 @@ class Tiket extends Model
     public function detailTikets(): HasMany {
         return $this->hasMany(DetailTiket::class, 'tiket_id');
     }
+
+    public function cs()
+    {
+        return $this->belongsTo(User::class, 'cs_menangani', 'id');
+    }
 }

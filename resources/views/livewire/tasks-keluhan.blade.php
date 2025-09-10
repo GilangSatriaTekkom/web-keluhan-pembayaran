@@ -8,16 +8,25 @@
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                              <div class="bg-gradient-primary row shadow-primary border-radius-lg pt-4 pb-3">
                                 <h6 class="text-white col text-capitalize ps-3">Tugas Keluhan</h6>
-                                <div class="col text-end">
+                                <div class="col-8 text-end">
                                      <!-- Button trigger modal -->
                                     <button data-bs-toggle="modal"
                     data-bs-target="#editModal" class="btn bg-gradient-info">
-                                        Cantumkan Teknisi Penanggung Jawab
+                                    @if ($tiket->nama_teknisi_menangani)
+Edit Teknisi Penanggung Jawab
+                                    @else
+Cantumkan Teknisi Penanggung Jawab
+                                    @endif
+
                                     </button>
                                     <button wire:click="redirectToWhatsAppPelanggan" class="btn bg-gradient-info">
                                         Hubungi Pelanggan
                                     </button>
-                                    <button wire:click="redirectToWhatsApp" class="btn bg-gradient-info">
+                                    <button
+                                    @if (!$tiket->nama_teknisi_menangani)
+                                        disabled
+                                    @endif
+                                    wire:click="redirectToWhatsApp" class="btn bg-gradient-info">
                                         Hubungi Teknisi
                                     </button>
                                     @if($this->allTasksCompleted())

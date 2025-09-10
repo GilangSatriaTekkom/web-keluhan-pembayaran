@@ -73,6 +73,9 @@
             @endif
             <div class="text-start">
                 <button
+                    @if ($tagihan->status_pembayaran !== 'lunas')
+                        disabled
+                    @endif
                     wire:click="struk"
                     class="btn btn-info"
                     >

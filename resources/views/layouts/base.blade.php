@@ -218,36 +218,4 @@ document.querySelector('df-messenger')
   });
 </script>
 
-
-{{-- <script>
-    document.querySelector('df-messenger').addEventListener('df-response-received', function (event) {
-        console.log('tuturu Edan');
-        const payload = event.detail.response.fulfillmentMessages[0].payload;
-
-        // Pastikan payload dan snapToken ada
-        if (payload && payload.richContent && payload.richContent[0][0].snapToken) {
-            const snapToken = payload.richContent[0][0].snapToken;
-
-            console.log('Tuturu edan 2');
-
-            // Pastikan snap.js sudah dimuat sebelum memanggil snap.pay()
-            if (typeof snap !== 'undefined' && snap) {
-                window.snap.pay(snapToken, {
-                    onSuccess: function(result){
-                        console.log("Pembayaran berhasil", result);
-                    },
-                    onPending: function(result){
-                        console.log("Pembayaran tertunda", result);
-                    },
-                    onError: function(result){
-                        console.log("Pembayaran gagal", result);
-                    }
-                });
-            } else {
-                console.error('Midtrans Snap.js belum dimuat.');
-            }
-        }
-    });
-</script> --}}
-
 </html>

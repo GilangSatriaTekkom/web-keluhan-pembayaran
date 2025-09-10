@@ -16,12 +16,13 @@
             <h6 class="font-weight-bolder mb-0 text-capitalize">{{ str_replace('-', ' ', Route::currentRouteName()) }}</h6>
         </nav>
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar" style="place-content: end;">
-            {{-- <div class="ms-md-auto pe-md-3 d-flex align-items-center">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Type here...</label>
-                    <input type="text" class="form-control">
+            @if (Auth::user()->role === 'admin')
+                <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+                    <div class="input-group input-group-outline">
+                        @livewire('global-search')
+                    </div>
                 </div>
-            </div> --}}
+            @endif
             <form method="POST" action="" class="d-none" id="logout-form">
                 @csrf
             </form>

@@ -45,9 +45,36 @@
                     <h6>Dibuat Pada</h6>
                     <p class="text-muted">{{ $complaint->created_at->format('d F Y H:i') }}</p>
                 </div>
+            </div>
+
+            <div class="row">
+                @if($complaint->user)
+                    <div class="col-md-4 mb-3">
+                        <h6>Penanggung Jawab Customer Service</h6>
+                        <div class="d-flex align-items-center">
+                            {{-- <div class="avatar avatar-sm me-2">
+                                <span class="avatar-initial rounded-circle bg-primary text-white">
+                                    {{ substr($complaint->user->name, 0, 1) }}
+                                </span>
+                            </div> --}}
+                            <div>
+                                @if ($complaint->cs_menangani)
+                                    <p class="text-muted">{{ $complaint->cs->name }}</p>
+                                @else
+                                    <p class="text-muted">Tidak ada teknisi yang menangani</p>
+                                @endif
+                                {{-- <small class="text-muted">{{ $complaint->user->email }}</small> --}}
+                            </div>
+                        </div>
+                    </div>
+                @endif
                 <div class="col-md-4 mb-3">
-                    <h6>Terakhir Diupdate</h6>
-                    <p class="text-muted">{{ $complaint->updated_at->format('d F Y H:i') }}</p>
+                    <h6>Penanggung Jawab Teknisi</h6>
+                    @if ($complaint->nama_teknisi_menangani)
+                        <p class="text-muted">{{ $complaint->nama_teknisi_menangani }}</p>
+                    @else
+                         <p class="text-muted">Tidak ada teknisi yang menangani</p>
+                    @endif
                 </div>
             </div>
 

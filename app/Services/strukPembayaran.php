@@ -23,9 +23,17 @@ class strukPembayaran
             'name'          => $this->safeString($pembayaran->user->name),
             'custom_fields' => [
                 'email'    => $this->safeString($pembayaran->user->email),
-                'phone'    => $this->safeString($pembayaran->user->phone ?? '-'),
-                'location' => $this->safeString($pembayaran->user->location ?? '-'),
+                'No Hp'    => $this->safeString($pembayaran->user->phone ?? '-'),
+                'Alamat' => $this->safeString($pembayaran->user->location ?? '-'),
                 'ID User'  => $pembayaran->user->id,
+            ],
+        ]);
+
+         // Data seller (provider internet)
+        $seller = new Buyer([
+            'name'          => 'Sukabumi Network',
+            'custom_fields' => [
+                'Alamat' => 'Jl. Arca No.08, Gunungpuyuh, Kec. Gunungpuyuh, Kota Sukabumi, Jawa Barat 43123',
             ],
         ]);
 
@@ -39,9 +47,12 @@ class strukPembayaran
 
         // Buat invoice
         $invoice = Invoice::make()
+            ->seller($seller)
             ->buyer($customer)
             ->addItem($item)
+            ->sequence($pembayaran->id)
             ->currencySymbol('Rp')
+            ->currencyFormat('{SYMBOL} {VALUE}')
             ->currencyCode('IDR');
 
         if ($filePath) {

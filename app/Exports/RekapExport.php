@@ -13,11 +13,14 @@ class RekapExport implements FromCollection
     /**
     * @return \Illuminate\Support\Collection
     */
-    public function collection($data)
+    public function collection()
     {
        $tikets = Tiket::with(['user:id,name', 'detailTikets'])->get();
+       $tagihans = Tagihan::with(['user:id,name'])->get();
 
-       if($data == 'tiket') {
+    //    dd($tagihans);
+
+        if($this->data == 'tiket') {
 
             return $tikets->map(function ($tiket) {
                 return [
@@ -32,27 +35,20 @@ class RekapExport implements FromCollection
                 ];
             });
         } else {
-            return $tikets->map(function ($tiket) {
+            return $tagihans->map(function ($tagihan) {
                 return [
-                    'id'          => $tiket->id,
-                    'status_pembayaran'      => $tiket->status_pembayaran,
-                    'metode_pembayaran'      => $tiket->metode_pembayaran,
-                    'jumlah_tagihan'      => $tiket->jumlah_tagihan,
-                    'tgl_jatuh_tempo'      => $tiket->tgl_jatuh_tempo,
-                    'created_at'  => $tiket->created_at,
-                    'updated_at'  => $tiket->updated_at,
-                    'user_name'   => $tiket->user ? $tiket->user->name : null,
+                    'id'          => $tagihan->id,
+                    'status_pembayaran'      => $tagihan->status_pembayaran,
+                    'metode_pembayaran'      => $tagihan->metode_pembayaran,
+                    'jumlah_tagihan'      => $tagihan->jumlah_tagihan,
+                    'tgl_jatuh_tempo'      => $tagihan->tgl_jatuh_tempo,
+                    'created_at'  => $tagihan->created_at,
+                    'updated_at'  => $tagihan->updated_at,
+                    'user_name'   => $tagihan->user ? $tagihan->user->name : null,
                     // ganti 'message' dengan kolom yang kamu mau tampilkan
                 ];
             });
         }
-
-    }
-    public function rekapPembayaran()
-    {
-       $tikets = Tagihan::with(['user:id,name',])->get();
-
-
 
     }
 

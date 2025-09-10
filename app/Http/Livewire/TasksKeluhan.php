@@ -19,6 +19,7 @@ class TasksKeluhan extends Component
     public $newTask = '';
     public $taskId;
     public $name;
+    public $tiket;
     public $phone;
 
     public function redirectToWhatsApp()
@@ -125,6 +126,10 @@ class TasksKeluhan extends Component
         $detail = DetailTiket::where('tiket_id', $this->complaintId)->first();
         $this->tasks = $detail ? (json_decode($detail->tasks, true) ?? []) : [];
         $this->taskId = $detail->id ?? null;
+        $tiket = Tiket::where('id', $this->complaintId)->first();
+        $this->tiket = $tiket;
+        $this->name = $tiket->nama_teknisi_menangani;
+        $this->phone = $tiket->phone_teknisi;
     }
 
     public function render()
@@ -201,7 +206,12 @@ class TasksKeluhan extends Component
         LivewireAlert::title("Data Berhasil diperbarui")
             ->success()
             ->withConfirmButton('Ok!')
+            ->onConfirm("refreshPage")
             ->show();
+    }
+
+    public function refreshPage() {
+        return redirect(request()->header('Referer'));
     }
 
     // Save all tasks to database

@@ -32,6 +32,7 @@ use App\Http\Livewire\LihatData\LihatPembayaran;
 use App\Http\Livewire\Lihat\Karyawan as LihatKaryawan;
 use App\Http\Livewire\Lihat\Pelanggan as LihatPelanggan;
 use App\Http\Controllers\MidtransController;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\User;
 use GuzzleHttp\Middleware;
@@ -81,6 +82,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/bayar-tagihan', function () {
         return view('bayar-tagihan'); // Blade ini extend base.php
     })->name('bayar-tagihan');
+
+    Route::get('/download-invoice/{file}', function ($file) {
+        return Storage::disk('invoices')->download($file);
+    })->name('invoices.download');
 
 
    });
