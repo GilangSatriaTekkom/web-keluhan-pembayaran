@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Tiket;
 use App\Models\User;
 use Livewire\Attributes\On;
+use App\Mail\TicketNotificationMail;
+use App\Mail\TicketResolvedMail;
+use Illuminate\Support\Facades\Mail;
 
 class TasksKeluhan extends Component
 {
@@ -21,23 +24,52 @@ class TasksKeluhan extends Component
     public $name;
     public $tiket;
     public $phone;
+    public $listTeknisi = [];
+    public $allTeknisi = [];
+    public $selectedTeknisi = [];
+    public $CS;
 
     public function redirectToWhatsApp()
     {
-       $complaint = Tiket::find($this->complaintId);
+        $complaint = Tiket::with(['teknisis', 'cs'])->find($this->complaintId);
 
         if (!$complaint) {
             $this->alert('error', 'Error', ['text' => 'Data keluhan tidak ditemukan']);
             return;
         }
 
-        $phoneNumber = Tiket::where('id', $this->complaintId)->value('phone_teknisi');
+        $this->listTeknisi = $complaint->teknisis()
+            ->wherePivot('tiket_id', $this->complaintId)
+            ->get();
 
         $message = "Halo, ada keluhan dari pelanggan:\n\n"
-                . "ID Keluhan: {$complaint->id}\n"
-                . "Kategori: {$complaint->category}\n"
-                . "Deskripsi: {$complaint->description}\n\n"
-                . "Tolong listkan tugasan yang harus dilakukan untuk mengatasi hal tersebut.";
+            . "ID Keluhan: {$complaint->id}\n"
+            . "Kategori: {$complaint->category}\n"
+            . "Deskripsi: {$complaint->description}\n\n"
+            . "Tolong listkan tugasan yang harus dilakukan untuk mengatasi hal tersebut.";
+
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            $teknisi = $complaint->teknisis;
+
+            if ($teknisi->isEmpty()) {
+                $this->alert('error', 'Error', ['text' => 'Tidak ada teknisi pada tiket ini']);
+                return;
+            }
+
+            if ($this->listTeknisi->count() === 1) {
+                $phoneNumber = $teknisi->first()->phone;
+            } else {
+                $this->dispatch('show-teknisi-modal');
+                return;
+            }
+        } else {
+            $phoneNumber = $complaint->cs->phone ?? null;
+        }
+
+        if (!$phoneNumber) {
+            $this->alert('error', 'Error', ['text' => 'Nomor WhatsApp tidak ditemukan']);
+            return;
+        }
 
         $url = "https://wa.me/{$phoneNumber}?text=" . rawurlencode($message);
 
@@ -83,34 +115,50 @@ class TasksKeluhan extends Component
             ->withDenyButton('Tidak')
             ->onConfirm('prosesPenyelesaianKeluhan')
             ->show();
-        }
+    }
 
-        public function prosesPenyelesaianKeluhan()
-        {
+    public function prosesPenyelesaianKeluhan()
+    {
+        Tiket::where('id', $this->complaintId)
+            ->update(['status' => 'selesai']);
 
-                Tiket::where('id', $this->complaintId)
-                    ->update(['status' => 'selesai']);
+        $tiket = Tiket::with("user")->find($this->complaintId);
 
-                // 3. Log the completion
-                Log::info('Keluhan diselesaikan', [
-                    'complaint_id' => $this->complaintId,
-                    'completed_at' => now(),
-                    'tasks' => $this->tasks
-                ]);
+        Log::info('Keluhan diselesaikan', [
+            'complaint_id' => $this->complaintId,
+            'completed_at' => now(),
+            'tasks' => $this->tasks
+        ]);
 
-                // 4. Show success notification with redirect
-                LivewireAlert::title('Berhasil!')
-                    ->text('Keluhan berhasil diselesaikan')
-                    ->success()
-                    ->toast()
-                    ->position('center')
-                    ->timer(2000)
-                    ->show();
+        $customer = $tiket->user; // pastikan relasi customer ada
 
-                    $this->dispatch('redirect-after-delay',
-                        url: route('tabel-keluhan.index')
-                    );
-        }
+        // Update status tiket
+        $tiket->status = 'selesai';
+        $tiket->save();
+
+        // Kirim email ke pelanggan
+        Mail::to($customer->email)->send(
+            new TicketResolvedMail(
+                $tiket->id,
+                $tiket->category,
+                $tiket->description,
+                $customer->name
+            )
+        );
+
+        LivewireAlert::title('Berhasil!')
+            ->text('Keluhan berhasil diselesaikan')
+            ->success()
+            ->toast()
+            ->position('center')
+            ->timer(2000)
+            ->show();
+
+        $this->dispatch('redirect-after-delay',
+            url: route('tabel-keluhan.index')
+        );
+    }
+
 
     #[On('redirect-after-delay')]
         public function returnToTableKeluhan()
@@ -128,8 +176,22 @@ class TasksKeluhan extends Component
         $this->taskId = $detail->id ?? null;
         $tiket = Tiket::where('id', $this->complaintId)->first();
         $this->tiket = $tiket;
-        $this->name = $tiket->nama_teknisi_menangani;
-        $this->phone = $tiket->phone_teknisi;
+        $this->allTeknisi = User::where('role', 'teknisi')
+            ->whereDoesntHave('tiketTeknisi', function ($query) {
+                $query->where('status', 'proses');
+            })
+            ->get();
+        $this->CS = Tiket::where('id', $this->complaintId)->pluck('cs_menangani');
+
+        $this->selectedTeknisi = $tiket->teknisi_menangani
+            ? explode(',', $tiket->teknisi_menangani)
+            : [];
+
+        if ($this->listTeknisi === null || empty($this->listTeknisi)) {
+            $this->listTeknisi = Tiket::with('teknisis')
+                ->find($id)
+                ?->teknisis ?? collect();
+        }
     }
 
     public function render()
@@ -143,7 +205,7 @@ class TasksKeluhan extends Component
     {
         // Toggle task completion status
         $newStatus = $this->tasks[$index]['completed'];
-        $this->saveTasks(); // Save to database
+        $this->saveTasks();
 
     }
 
@@ -162,7 +224,7 @@ class TasksKeluhan extends Component
         return true;
     }
 
-    // Add new task
+
     public function addTask()
     {
         $this->validate([
@@ -195,20 +257,46 @@ class TasksKeluhan extends Component
             ->show();
     }
 
+
     public function updateTeknisi()
     {
-        Tiket::where('id', $this->complaintId)->update([
-            'nama_teknisi_menangani' => $this->name,
-            'phone_teknisi' => $this->phone,
+        $tiket = Tiket::findOrFail($this->complaintId);
+
+        // Sinkronkan teknisi yang dipilih ke pivot
+        $tiket->teknisis()->attach($this->selectedTeknisi);
+
+        Log::info("Update teknisi", [
+            'selected' => $this->selectedTeknisi,
+            'tiket_id' => $this->complaintId
         ]);
 
-        Log::info("testing", [$this->name, $this->phone, $this->complaintId]);
+        foreach ($this->selectedTeknisi as $teknisiId) {
+            $teknisi = User::find($teknisiId);
+
+            if ($teknisi && $teknisi->email) {
+                $subject = "Tugas Baru: Tiket #{$tiket->id}";
+
+                Mail::to($teknisi->email)->send(
+                    new TicketNotificationMail(
+                        $subject,                           // subjectText
+                        "Anda mendapatkan tugas tiket baru", // messageText
+                        $tiket->id,                          // ticketId
+                        $tiket->category,                    // ticketCategory
+                        $tiket->description,                 // ticketDescription
+                        $teknisi->name                       // teknisiName
+                    )
+                );
+            }
+        }
+
         LivewireAlert::title("Data Berhasil diperbarui")
             ->success()
             ->withConfirmButton('Ok!')
             ->onConfirm("refreshPage")
             ->show();
     }
+
+
 
     public function refreshPage() {
         return redirect(request()->header('Referer'));
@@ -222,4 +310,25 @@ class TasksKeluhan extends Component
             ['tasks' => json_encode($this->tasks)]
         );
     }
+
+
+
+    public function markAsCompleted($tiketId)
+    {
+        $tiket = Tiket::findOrFail($tiketId);
+        $tiket->status = 'selesai';
+        $tiket->save();
+
+        $user = $tiket->user;
+        if ($user && $user->email) {
+            $subject = "Tiket #{$tiket->id} Selesai";
+            $message = "Halo {$user->name},\n\n"
+                . "Tiket Anda dengan ID #{$tiket->id} sudah berhasil diselesaikan.\n"
+                . "Terima kasih telah menggunakan layanan kami 🙏.";
+
+            Mail::to($user->email)->send(new TicketNotificationMail($subject, $message));
+        }
+    }
+
+
 }

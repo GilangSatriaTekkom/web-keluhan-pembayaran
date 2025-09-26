@@ -21,14 +21,17 @@ use App\Http\Livewire\VirtualReality;
 use App\Http\Livewire\TabelKeluhan;
 use App\Http\Livewire\TabelPembayaran;
 use App\Http\Livewire\Karyawan;
+use App\Http\Livewire\Teknisi;
 use App\Http\Livewire\Pelanggan;
 use App\Http\Livewire\TambahUsers;
+use App\Http\Livewire\Create\Teknisi as TeknisiTambah;
 use App\Http\Livewire\Create\Karyawan as KaryawanTambah;
 use App\Http\Livewire\Create\Pelanggan as PelangganTambah;
 use App\Http\Livewire\Create\Keluhan as KeluhanTambah;
 use App\Http\Livewire\LihatKeluhan;
 use App\Http\Livewire\TasksKeluhan;
 use App\Http\Livewire\LihatData\LihatPembayaran;
+use App\Http\Livewire\Lihat\Teknisi as LihatTeknisi;
 use App\Http\Livewire\Lihat\Karyawan as LihatKaryawan;
 use App\Http\Livewire\Lihat\Pelanggan as LihatPelanggan;
 use App\Http\Controllers\MidtransController;
@@ -90,6 +93,10 @@ Route::group(['middleware' => 'auth'], function () {
 
    });
 
+Route::prefix('teknisi')->middleware(['auth', 'role:teknisi'])->group(function () {
+    Route::get('tabel-keluhan/tasks/{id}', TasksKeluhan::class)->name('tasks.keluhan.teknisi');
+});
+
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('tabel-keluhan/tasks/{id}', TasksKeluhan::class)->name('tasks.keluhan');
     Route::get('pelanggan', Pelanggan::class)->name('pelanggan');
@@ -105,6 +112,13 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::post('karyawan/add', Karyawan::class)->name('karyawan.add');
     Route::put('karyawan/update/{id}', [Karyawan::class, 'edit'])->name('karyawan.edit');
     Route::delete('karyawan/destroy/{id}', [Karyawan::class, 'destroy'])->name('karyawan.destroy');
+
+    Route::get('teknisi', Teknisi::class)->name('teknisi');
+    Route::get('teknisi/lihat/{id}', LihatTeknisi::class)->name('teknisi.lihat');
+    Route::get('teknisi/tambah', TeknisiTambah::class)->name('teknisi.tambah');
+    Route::post('teknisi/add', Teknisi::class)->name('teknisi.add');
+    Route::put('teknisi/update/{id}', [Teknisi::class, 'edit'])->name('teknisi.edit');
+    Route::delete('teknisi/destroy/{id}', [Teknisi::class, 'destroy'])->name('teknisi.destroy');
 
     Route::put('tabel-keluhan/update/{id}', [Pelanggan::class, 'edit'])->name('tabel-keluhan.edit');
     Route::delete('tabel-keluhan/destroy/{id}', [Pelanggan::class, 'destroy'])->name('tabel-keluhan.destroy');

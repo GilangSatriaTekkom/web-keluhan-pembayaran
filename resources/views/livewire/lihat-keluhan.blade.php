@@ -11,7 +11,8 @@
                     <span class="badge
                         @if($complaint->status == 'menunggu') bg-danger
                         @elseif($complaint->status == 'selesai') bg-success
-                        @else bg-warning @endif" style="float: inline-end;">
+                        @else bg-warning
+                        @endif" style="float: inline-end;">
                         {{ $complaint->status }}
                     </span>
                 </div>
@@ -29,11 +30,6 @@
                     <div class="col-md-4 mb-3">
                         <h6>Dibuat Oleh</h6>
                         <div class="d-flex align-items-center">
-                            {{-- <div class="avatar avatar-sm me-2">
-                                <span class="avatar-initial rounded-circle bg-primary text-white">
-                                    {{ substr($complaint->user->name, 0, 1) }}
-                                </span>
-                            </div> --}}
                             <div>
                                 <p class="mb-0">{{ $complaint->user->name }}</p>
                                 {{-- <small class="text-muted">{{ $complaint->user->email }}</small> --}}
@@ -52,11 +48,6 @@
                     <div class="col-md-4 mb-3">
                         <h6>Penanggung Jawab Customer Service</h6>
                         <div class="d-flex align-items-center">
-                            {{-- <div class="avatar avatar-sm me-2">
-                                <span class="avatar-initial rounded-circle bg-primary text-white">
-                                    {{ substr($complaint->user->name, 0, 1) }}
-                                </span>
-                            </div> --}}
                             <div>
                                 @if ($complaint->cs_menangani)
                                     <p class="text-muted">{{ $complaint->cs->name }}</p>
@@ -70,11 +61,11 @@
                 @endif
                 <div class="col-md-4 mb-3">
                     <h6>Penanggung Jawab Teknisi</h6>
-                    @if ($complaint->nama_teknisi_menangani)
-                        <p class="text-muted">{{ $complaint->nama_teknisi_menangani }}</p>
-                    @else
-                         <p class="text-muted">Tidak ada teknisi yang menangani</p>
-                    @endif
+                    @forelse($complaintTeknisi as $teknisi)
+                        <li>{{ $teknisi->name }}</li>
+                    @empty
+                        <li><em>Tidak ada teknisi terpilih</em></li>
+                    @endforelse
                 </div>
             </div>
 
@@ -95,15 +86,25 @@
                 <div class="col-md-7 row mt-3">
                     @if($authUser->role == 'admin')
                         <div class="col-md-4" style="place-content: end;">
-                            <button @if($complaint->status == 'proses') disabled @endif  wire:click="alertPopup('Proses Keluhan', 'Yakin proses keluhan ini?', 'prosesKeluhan')"
+                            <button @if($complaint->status == 'proses') disabled @endif  wire:click="alertPopup('Proses Keluhan', 'Yakin proses keluhan ini? Diharapkan hubungi pelanggan untuk memastikan keluhan terlebih dulu!', 'prosesKeluhan')"
                                 class="btn btn-md col btn-info mb-3"
                                 data-toggle="tooltip" data-original-title="Edit user">
                                 Proses Keluhan
                             </button>
                         </div>
                     @endif
+                    @if($authUser->role == 'admin' && $complaint->status != 'proses')
+                        <div class="col-md-4" style="place-content: end;">
+                            <button wire:click="redirectToWhatsAppPelanggan"
+                                class="btn btn-md col btn-info mb-3">
+                                Hubungi Pelanggan
+                            </button>
+                        </div>
+                    @endif
+
+                    @if($authUser->role == 'admin' || $authUser->role == 'teknisi')
                     <div class="col-md-4" style="place-content: end;">
-                    @if($authUser->role == 'admin')
+
                         @if($complaint->status == 'proses')
                             <button wire:click='openTaskModal'
                                 class="btn btn-md col btn-info mb-3"
@@ -111,8 +112,8 @@
                                 Update tugasan
                             </button>
                         @endif
-                    @endif
                     </div>
+                    @endif
                 </div>
                 @endif
             </div>

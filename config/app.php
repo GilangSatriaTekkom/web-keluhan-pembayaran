@@ -236,4 +236,7 @@ return [
 
     ],
 
+
+    'static_url' => env('APP_STATIC_URL', 'https://hagiological-marchelle-waspier.ngrok-free.app/tabel-keluhan/lihat/'),
+
 ];

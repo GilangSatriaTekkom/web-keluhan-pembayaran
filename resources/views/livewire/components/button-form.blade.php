@@ -9,5 +9,9 @@
         <a href="{{ route('pelanggan.tambah') }}" class="btn col btn-info" style="margin-bottom: unset;" data-toggle="modal" data-target="#modalTambahKaryawan">
             <i class="fas fa-user-plus"></i> Tambah Pelanggan
         </a>
+    @else
+        <a href="{{ route('teknisi.tambah') }}" class="btn col btn-info" style="margin-bottom: unset;" data-toggle="modal" data-target="#modalTambahKaryawan">
+            <i class="fas fa-user-plus"></i> Tambah Teknisi
+        </a>
     @endif
 </div>

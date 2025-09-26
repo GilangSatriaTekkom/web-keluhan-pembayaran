@@ -51,8 +51,6 @@ class DialogflowHandler extends Controller
             return $this->handleWelcomeIntent();
         }
 
-
-
         return match ($intent) {
             // --- Pendaftaran akun ---
             'buatAkun'           => $this->handleCreateAccount($parameters, $session),
@@ -129,11 +127,6 @@ class DialogflowHandler extends Controller
             $query->whereDate('periode', '=', Carbon::parse($params['periode'])->format('Y-m-d'));
         }
 
-        // Filter berdasarkan status (custom entity)
-        if ($params['status'] == 'belum lunas') {
-            return $this->createTextResponse("Invoice hanya dapat mendownload tagihan yang lunas");
-        }
-
         if (!empty($params['tanggal'])) {
             $tanggal = $params['tanggal'] ?? null;
 
@@ -168,14 +161,19 @@ class DialogflowHandler extends Controller
                 }
             }
         }
-        // Filter berdasarkan metode bayar
-        if (!empty($params['metode'])) {
-            $query->where('metode_bayar', $params['metode']);
-        }
 
         // Filter berdasarkan id-tagihan
         if (!empty($params['id-invoice'])) {
             $query->where('id', $params['id-invoice']);
+        }
+
+        // Filter berdasarkan bulan (custom entity)
+        if (!empty($params['bulan_number'])) {
+            $tanggal = $params['bulan_number'] ?? null;
+
+            if ($tanggal) {
+                $query->whereMonth('created_at', $tanggal);
+            }
         }
 
         // Eksekusi query
@@ -533,7 +531,7 @@ class DialogflowHandler extends Controller
 
         elseif (in_array('deskripsi', $missingParams)) {
             $context = ["buatKeluhan_context","buatDeskripsi_deskripsi"];
-            return $this->createContextResponse("Terima kasih. Coba jelaskan lebih rinci terkait keluhan Anda ini.", $context, $session);
+            return $this->createContextResponse("Terima kasih atas Kategori  keluhannya. Sekarang, Coba jelaskan lebih rinci terkait keluhan Anda ini.", $context, $session);
         }
     }
 
@@ -615,7 +613,8 @@ class DialogflowHandler extends Controller
         $userId = $this->userId;
         // $userId = 23;
 
-        $query = Tagihan::query()->where('user_id', $userId)->where('status_pembayaran', 'belum_lunas');
+        $query = Tagihan::query()->where('user_id', $userId);
+        // $query = Tagihan::query()->where('user_id', $userId)->where('status_pembayaran', 'belum_lunas');
 
         // Filter berdasarkan tanggal (sys.date)
         if (!empty($parameters['tanggal'])) {
@@ -623,9 +622,12 @@ class DialogflowHandler extends Controller
         }
 
         // Filter berdasarkan bulan (custom entity)
-        if (!empty($parameters['bulan'])) {
-            $query->whereMonth('created_at', \Carbon\Carbon::parse($parameters['bulan'])->month);
-            $query->whereYear('created_at', \Carbon\Carbon::parse($parameters['bulan'])->year);
+        if (!empty($params['bulan_number'])) {
+            $tanggal = $params['bulan_number'] ?? null;
+
+            if ($tanggal) {
+                $query->whereMonth('created_at', $tanggal);
+            }
         }
 
         // Filter berdasarkan id keluhan
@@ -650,19 +652,32 @@ class DialogflowHandler extends Controller
         }
 
         // Filter berdasarkan filterCekKeluhan (custom logic, misal status)
-        if (!empty($parameters['filterCekKeluhan'])) {
-            foreach ($parameters['filterCekKeluhan'] as $filter) {
+        if (!empty($parameters['filterBayarTagihan'])) {
+            foreach ($parameters['filterBayarTagihan'] as $filter) {
                 switch ($filter) {
                     case 'bulan ini':
                         $query->whereMonth('created_at', now()->month)
                             ->whereYear('created_at', now()->year);
                         break;
                     case 'bulan kemarin':
-                        $query->whereMonth('created_at', now()->subMonth()->month)
-                            ->whereYear('created_at', now()->subMonth()->year);
+                        $query->whereDate('created_at', '<', now()->startOfMonth());
                         break;
                     case 'lama':
                         $query->oldest();
+                        break;
+                    case 'kemarin':
+                            $query->whereDate('created_at', now()->subDay()->toDateString());
+                            break;
+                    case 'jatuh tempo':
+                        $query->whereDate('created_at', now()->toDateString());
+                        break;
+
+                    case 'tertunggak':
+                        $query->whereDate('created_at', '<', now()->toDateString());
+                        break;
+
+                    case 'belum_jatuh_tempo':
+                        $query->whereDate('created_at', '>', now()->toDateString());
                         break;
                     case 'semua':
                         // Tidak perlu filter tambahan
@@ -689,6 +704,43 @@ class DialogflowHandler extends Controller
                 ['bayarTagihan'],
                 $session,
             );
+        }
+
+        // Cek apakah semua status sudah lunas
+        if ($bills->every(fn($t) => $t->status_pembayaran === 'lunas')) {
+            // Buat chips untuk arahkan ke detail tagihan
+            $chips = $bills->map(function ($t) {
+                return [
+                    'text' => "Tagihan #{$t->id}",
+                    'link' => config('app.static_url') . 'tabel-pembayaran/lihat/' . $t->id, // sesuaikan dengan action command di sistem kamu
+                ];
+            })->toArray();
+
+            return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            'richContent' => [
+                            [
+                                [
+                                    'type' => 'info',
+                                    'subtitle' => "Semua tagihan yang kamu filter sudah *lunas* dibayar ✅"
+                                ]
+                            ],
+                            [
+                                [
+                                    'type' => 'chips',
+                                    'options' => $chips
+
+                                ]
+                            ]
+
+                        ]
+
+                        ]
+                    ]
+                ],
+            ];
         }
 
         foreach ($bills as $bill) {
@@ -956,6 +1008,14 @@ class DialogflowHandler extends Controller
             }
         }
 
+        if (!empty($parameters['bulan_number'])) {
+            $tanggal = $parameters['bulan_number'] ?? null;
+
+            if ($tanggal) {
+                $query->whereMonth('created_at', $tanggal);
+            }
+        }
+
 
         // Filter berdasarkan id keluhan
         if (!empty($parameters['idKeluhan'])) {
@@ -983,6 +1043,9 @@ class DialogflowHandler extends Controller
                     case 'menunggu':
                     case 'selesai':
                         $query->where('status', $filter);
+                        break;
+                    case 'kemarin':
+                        $query->whereDate('created_at', now()->subDay()->toDateString());
                         break;
                     default:
                         // Jika tidak dikenali, abaikan
@@ -1094,6 +1157,14 @@ class DialogflowHandler extends Controller
             }
         }
 
+        if (!empty($params['bulan_number'])) {
+            $tanggal = $params['bulan_number'] ?? null;
+
+            if ($tanggal) {
+                $query->whereMonth('created_at', $tanggal);
+            }
+        }
+
         if(!empty($params['filterTagihan'])) {
             foreach ($params['filterTagihan'] as $filter) {
                 switch ($filter) {
@@ -1111,6 +1182,9 @@ class DialogflowHandler extends Controller
                     case 'nunggak':
                         $query->where('tgl_jatuh_tempo', '<', now()->format('Y-m-d'));
                         break;
+                    case 'kemarin':
+                        $query->whereDate('created_at', now()->subDay()->toDateString());
+                        break;
                     case 'semua':
                         // Tidak perlu filter tambahan
                         break;
@@ -1120,24 +1194,16 @@ class DialogflowHandler extends Controller
                 }
             }
         }
-        // Filter berdasarkan metode bayar
-        if (!empty($params['metode'])) {
-            $query->where('metode_bayar', $params['metode']);
-        }
 
         // Filter berdasarkan id-tagihan
-        if (!empty($params['id-tagihan'])) {
-            $query->where('id', $params['id-tagihan']);
+        if (!empty($params['idTagihan'])) {
+            $query->where('id', $params['idTagihan']);
         }
 
         // Eksekusi query
         $tagihan = $query->get();
         Log::info("Filtered tagihan count: " . $tagihan);
 
-        // Jika tidak ada parameter sekalipun, ambil semua data
-        // (logika di atas sudah otomatis, karena query tetap kosong jika params kosong)
-
-        // Bisa return data atau sesuaikan dengan kebutuhan
         return $this->createCollectionTagihanTextResponse("Berikut list tagihan sesuai yang anda inginkan", $tagihan, $params, $session);
     }
 

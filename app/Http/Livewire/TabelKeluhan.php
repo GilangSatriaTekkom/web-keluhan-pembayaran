@@ -73,6 +73,12 @@ class TabelKeluhan extends Component
         $baseQuery = Tiket::with('user');
         if ($user->role === 'pelanggan') {
             $baseQuery->where('user_id', $userId);
+        } elseif($user->role === 'teknisi') {
+            $baseQuery->with('teknisis')
+            ->whereHas('teknisis', function ($q) use ($userId) {
+                $q->where('users.id', $userId);
+            })
+            ->get();
         } else {
             $baseQuery->get();
         }

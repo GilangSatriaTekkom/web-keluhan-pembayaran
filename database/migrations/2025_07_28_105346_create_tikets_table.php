@@ -18,17 +18,24 @@ return new class extends Migration
             $table->enum('status', ['menunggu', 'selesai', 'proses'])->default('menunggu');
             $table->text('description');
             $table->foreignId('cs_menangani')->nullable()->constrained('users')->onDelete('cascade');
-            $table->string('nama_teknisi_menangani')->nullable();
-            $table->string('phone_teknisi')->nullable();
             $table->timestamps();
         });
-    }
 
+        // Pivot table untuk teknisi
+        Schema::create('tiket_teknisi', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('tiket_id')->constrained('tikets')->onDelete('cascade');
+            $table->foreignId('teknisi_id')->constrained('users')->onDelete('cascade'); // teknisi dari users
+            $table->timestamps();
+        });
+
+    }
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
+        Schema::dropIfExists('tiket_teknisi');
         Schema::dropIfExists('tikets');
     }
 };

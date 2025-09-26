@@ -10,6 +10,6 @@ REM Tunggu 2 detik biar Laravel siap
 timeout /t 2 >nul
 
 REM Jalankan ngrok untuk Laravel
-ngrok http --url=adder-ultimate-snapper.ngrok-free.app 8000
+ngrok http --url=hagiological-marchelle-waspier.ngrok-free.app 8000
 
 pause

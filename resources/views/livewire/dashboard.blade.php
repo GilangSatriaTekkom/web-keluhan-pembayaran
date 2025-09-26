@@ -3,7 +3,7 @@
     <!-- End Navbar -->
     <div class="container-fluid py-4">
         @auth
-            @if (Auth::user()->role !== 'admin')
+            @if (Auth::user()->role == 'pelanggan')
                 <div class="row">
                         <div class="col-xl-6 col-sm-6 mb-xl-0 mb-4">
                             <div class="card">
@@ -36,6 +36,45 @@
                                             <h4 class="mb-0">{{ $keluhanDirespon }}</h4>
                                         @else
                                             <h4 class="mb-0">Tidak ada Keluhan selesai bulan ini</h4>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            @elseif(Auth::user()->role == 'teknisi')
+                    <div class="row">
+                        <div class="col-xl-4 col-sm-4 mb-xl-0 mb-4">
+                            <div class="card">
+                                <div class="card-header p-3 pt-2">
+                                    <div
+                                        class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
+                                        <i class="material-icons opacity-10">person</i>
+                                    </div>
+                                    <div class="text-end pt-1">
+                                        <p class="text-sm mb-0 text-capitalize">Keluhan yang belum diselesaikan</p>
+                                        @if ($totalKeluhanTeknisi !== null)
+                                            <h4 class="mb-0">{{ $totalKeluhanTeknisi }}</h4>
+                                        @else
+                                            <h4 class="mb-0">Tagihan semua pelanggan lunas</h4>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-sm-4 mb-xl-0 mb-4">
+                            <div class="card">
+                                <div class="card-header p-3 pt-2">
+                                    <div
+                                        class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
+                                        <i class="material-icons opacity-10">person</i>
+                                    </div>
+                                    <div class="text-end pt-1">
+                                        <p class="text-sm mb-0 text-capitalize">Keluhan terselesaikan bulan ini</p>
+                                        @if ($keluhanTeknisiBulanan !== null)
+                                            <h4 class="mb-0">{{ $keluhanTeknisiBulanan }}</h4>
+                                        @else
+                                            <h4 class="mb-0">Tagihan semua pelanggan lunas</h4>
                                         @endif
                                     </div>
                                 </div>
@@ -99,15 +138,9 @@
                         </div>
                     </div>
                 </div>
-
             @endif
-
-
-
         @endauth
-
         <div class="col mt-4 mb-4">
-
             @auth
                 @if (Auth::user()->role == 'admin')
                 <div class="col-lg-12 row mt-4 col-md-6 mb-md-0 mb-4">
@@ -298,7 +331,98 @@
                     </div>
                 </div>
                 @endif
-                @if (Auth::user()->role !== 'admin')
+                @if (Auth::user()->role == 'teknisi')
+                <div class="col-lg-12 row mt-4 col-md-6 mb-md-0 mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header pb-0">
+                                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                                    <div class="px-4 row algin-items-center">
+                                        <h6 class="col" style="color: white;">Keluhan bulan ini</h6>
+                                    </div>
+                                    <div class="px-4 mt-4 row">
+                                        <div class="row text-end mb-3" style="margin-right: 18px; gap: 12px; display: flex;">
+                                                <!-- Button trigger modal -->
+                                            <div class="col" style="background-color: white; border-radius: 999px;">
+                                                <input type="text" wire:model.live.debounce.300ms="searchAktif"
+                                                    class="form-control"
+                                                    placeholder="Cari tiket, customer, atau kategori...">
+                                            </div>
+                                            <div class="col" style="background-color: white; border-radius: 999px;">
+                                                <input type="date" wire:model.live="tanggalAktif" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="card-body px-0 pb-2">
+                                <div class="table-responsive">
+                                    <table class="table universal-search align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th
+                                                    class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    Kategori</th>
+                                                <th
+                                                    class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                                    Tanggal</th>
+                                                <th
+                                                    class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    Status</th>
+                                                <th
+                                                    class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if ($keluhanTeknisi->isEmpty())
+                                                <tr>
+                                                    <td colspan="3" class="text-center">Tidak ada Keluhan yang harus diselesaikan</td>
+                                                </tr>
+                                                @else
+                                                    @foreach ($keluhanTeknisi as $keluhan)
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex flex-column justify-content-center">
+                                                                <h6 class="mb-0 text-sm">{{ $keluhan->category }}</h6>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex flex-column justify-content-center">
+                                                                <h6 class="mb-0 text-sm">{{ formatTanggalIndonesia($keluhan->created_at) }}</h6>
+                                                            </div>
+                                                        </td>
+                                                        <td class="align-middle text-center text-sm">
+                                                            <span class="badge badge-sm {{ $keluhan->status == 'menunggu' ? 'bg-gradient-danger' : ($keluhan->status == 'proses' ? 'bg-gradient-warning' : 'bg-gradient-success') }}">{{ $keluhan->status }}</span>
+                                                        </td>
+
+                                                        {{-- @auth
+                                                            @if (Auth::user()->role == 'admin') --}}
+                                                                <td class="align-middle text-center">
+                                                                    <a href="{{ route('lihat.keluhan', ['id' => $keluhan->id]) }}"
+                                                                        class="btn col btn-sm btn-info mb-3"
+                                                                        data-toggle="tooltip" data-original-title="Edit user">
+                                                                        Lihat Detail
+                                                                    </a>
+                                                                </td>
+                                                            {{-- @endif
+                                                        @endauth --}}
+                                                    </tr>
+                                                    @endforeach
+                                                @endif
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="p-3">
+                                    {{ $keluhanBulanIni->links() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                @if (Auth::user()->role == 'pelanggan')
                     <div class="col-lg-12 row col-md-6 mb-md-0 mb-4">
                         <div class="col-6">
                             <div class="card">

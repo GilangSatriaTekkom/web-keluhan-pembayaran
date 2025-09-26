@@ -10,7 +10,13 @@
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                             <div class="bg-gradient-primary row shadow-primary border-radius-lg pt-4 pb-3">
                                 <div class="left-wrap col-6 row">
-                                    <h6 class="text-white col text-capitalize ps-3">Keluhan Aktif</h6>
+                                    <h6 class="text-white col text-capitalize ps-3">
+                                        @if (Auth::user()->role == 'pelanggan' || Auth::user()->role == 'admin')
+                                        Keluhan Aktif
+                                        @else
+                                        Keluhan Perlu Diatasi
+                                        @endif
+                                    </h6>
                                     {{-- <div class="col " style="height: fit-content;">
                                         <button wire:click="exportExcel" class="btn col btn-info" style="margin-bottom: unset;" data-toggle="modal" data-target="#modalTambahKaryawan">
                                             <i class="fas fa-user-plus"></i> Rekap Bulanan
@@ -21,10 +27,13 @@
                                 <div class="col-6 text-end" style="margin-right: 20px;">
                                     <div class="row mb-3" style="gap: 12px; display: flex;">
                                         <!-- Button trigger modal -->
-                                        <a href="{{ route('tabel-keluhan.tambah') }}" class="btn col bg-gradient-info" style="margin-bottom: 0px;">
-                                            Buat Keluhan
-                                        </a>
-
+                                        @auth
+                                            @if (Auth::user()->role == 'pelanggan')
+                                                <a href="{{ route('tabel-keluhan.tambah') }}" class="btn col bg-gradient-info" style="margin-bottom: 0px;">
+                                                    Buat Keluhan
+                                                </a>
+                                            @endif
+                                        @endauth
                                         <div class="col-md-5" style="background-color: white; border-radius: 999px;">
                                             <input type="text" wire:model.live.debounce.300ms="searchAktif"
                                                 class="form-control"

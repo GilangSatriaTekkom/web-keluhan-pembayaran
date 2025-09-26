@@ -223,7 +223,8 @@ class DatabaseSeeder extends Seeder
 
             // Setiap user memiliki 10 tiket
             $categories = ['Gangguan Internet', 'Layanan Tambahan', 'Billing', 'Teknis', 'Lainnya'];
-            $statuses = ['menunggu', 'proses', 'selesai'];
+            $statuses = ['menunggu', 'selesai'];
+            $allTeknisi = User::where('role', 'teknisi')->pluck('id')->toArray();
 
             for ($k = 1; $k <= 10; $k++) {
                 $category = $categories[array_rand($categories)];
@@ -261,6 +262,12 @@ class DatabaseSeeder extends Seeder
                     'created_at' => now()->subDays(rand(1, 365)),
                     'updated_at' => now()->subDays(rand(1, 365)),
                 ]);
+
+                // Jika tiket status = proses, assign teknisi 1–2 orang random
+                if ($status === 'proses' && !empty($allTeknisi)) {
+                    $randomTeknisi = collect($allTeknisi)->random(rand(1, 2));
+                    $tiket->teknisis()->attach($randomTeknisi);
+                }
 
                 // Setiap tiket memiliki 10 detail tiket
                 $isDone = $status === 'selesai';
@@ -306,6 +313,81 @@ class DatabaseSeeder extends Seeder
                     'updated_at' => $tiket->updated_at,
                 ]);
             }
+        }
+
+        $teknisis = [
+            [
+                'name' => 'Teknisi Andi',
+                'email' => 'andi.teknisi@gmail.com',
+                'location' => 'Jl. Kenangan No. 1, Jakarta',
+                'phone' => '+628111111111'
+            ],
+            [
+                'name' => 'Teknisi Budi',
+                'email' => 'budi.teknisi@gmail.com',
+                'location' => 'Jl. Mawar No. 2, Bandung',
+                'phone' => '+628111111112'
+            ],
+            [
+                'name' => 'Teknisi Citra',
+                'email' => 'citra.teknisi@gmail.com',
+                'location' => 'Jl. Melati No. 3, Surabaya',
+                'phone' => '+628111111113'
+            ],
+            [
+                'name' => 'Teknisi Dedi',
+                'email' => 'dedi.teknisi@gmail.com',
+                'location' => 'Jl. Anggrek No. 4, Yogyakarta',
+                'phone' => '+628111111114'
+            ],
+            [
+                'name' => 'Teknisi Eka',
+                'email' => 'eka.teknisi@gmail.com',
+                'location' => 'Jl. Flamboyan No. 5, Semarang',
+                'phone' => '+628111111115'
+            ],
+            [
+                'name' => 'Teknisi Fajar',
+                'email' => 'fajar.teknisi@gmail.com',
+                'location' => 'Jl. Cendana No. 6, Medan',
+                'phone' => '+628111111116'
+            ],
+            [
+                'name' => 'Teknisi Gita',
+                'email' => 'gita.teknisi@gmail.com',
+                'location' => 'Jl. Teratai No. 7, Bali',
+                'phone' => '+628111111117'
+            ],
+            [
+                'name' => 'Teknisi Hendra',
+                'email' => 'hendra.teknisi@gmail.com',
+                'location' => 'Jl. Dahlia No. 8, Makassar',
+                'phone' => '+628111111118'
+            ],
+            [
+                'name' => 'Teknisi Intan',
+                'email' => 'intan.teknisi@gmail.com',
+                'location' => 'Jl. Sakura No. 9, Palembang',
+                'phone' => '+628111111119'
+            ],
+            [
+                'name' => 'Teknisi Joko',
+                'email' => 'joko.teknisi@gmail.com',
+                'location' => 'Jl. Kamboja No. 10, Pontianak',
+                'phone' => '+628111111120'
+            ],
+        ];
+
+        foreach ($teknisis as $teknisiData) {
+            User::create([
+                'name'       => $teknisiData['name'],
+                'email'      => $teknisiData['email'],
+                'password'   => 'password',
+                'location'   => $teknisiData['location'],
+                'phone'      => $teknisiData['phone'],
+                'role'       => 'teknisi',
+                'status'     => 'aktif',
+            ]);
         }
     }
 }

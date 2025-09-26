@@ -13,4 +13,4 @@ sleep 2
 # Jalankan ngrok untuk Laravel
 # ./ngrok http 8000
 
-./ngrok http --url=adder-ultimate-snapper.ngrok-free.app 8000
+./ngrok http --url=hagiological-marchelle-waspier.ngrok-free.app 8000

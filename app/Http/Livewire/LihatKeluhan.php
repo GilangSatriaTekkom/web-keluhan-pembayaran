@@ -17,6 +17,7 @@ class LihatKeluhan extends Component
     public $showTaskModal = false;
     public $selectedComplaintId;
     public $authUserId;
+    public $complaintTeknisi;
 
     protected $listeners = ['showComplaintDetail' => 'loadComplaint'];
 
@@ -26,6 +27,24 @@ class LihatKeluhan extends Component
             $this->loadComplaint($id);
         }
         $this->authUserId = Auth::id();
+    }
+
+    public function redirectToWhatsAppPelanggan()
+    {
+       $complaint = Tiket::find($this->complaintId);
+
+        if (!$complaint) {
+            $this->alert('error', 'Error', ['text' => 'Data keluhan tidak ditemukan']);
+            return;
+        }
+
+        $phoneNumber = User::where('role', 'pelanggan')
+            ->where('id', $complaint->user_id)
+            ->value('phone');
+
+        $url = "https://wa.me/{$phoneNumber}";
+
+        return redirect()->away($url);
     }
 
     public function alertPopup($title, $text, $confirm)
@@ -51,7 +70,12 @@ class LihatKeluhan extends Component
 
     public function openTaskModal()
     {
-        return redirect()->route('tasks.keluhan', ['id' => $this->complaintId]);
+        $user =  User::where('id', $this->authUserId)->first();
+        if ($user->role == 'admin') {
+            return redirect()->route('tasks.keluhan', ['id' => $this->complaintId]);
+        } else {
+            return redirect()->route('tasks.keluhan.teknisi', ['id' => $this->complaintId]);
+        }
     }
 
     // Add new task
@@ -89,7 +113,9 @@ class LihatKeluhan extends Component
     public function loadComplaint($id)
     {
         $this->complaintId = $id;
-        $this->complaint = Tiket::with('user')->findOrFail($id);
+        $this->complaint = Tiket::with(['user', 'teknisis'])->findOrFail($id);
+
+        $this->complaintTeknisi = $this->complaint->teknisis;
     }
 
     public function render()

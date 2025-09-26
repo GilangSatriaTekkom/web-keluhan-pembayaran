@@ -48,7 +48,13 @@
                         type="text"
                         class="form-control border border-2 p-2"
                         placeholder="+6281234567890"
-                        oninput="if(!this.value.startsWith('+62')) this.value = '+62' + this.value.replace(/^(\+62|62|0)*/, '');"
+                        oninput="
+                                    if (event.inputType !== 'deleteContentBackward') {
+                                        if (this.value !== '' && !this.value.startsWith('+62')) {
+                                            this.value = '+62' + this.value.replace(/^(\+62|62|0)*/, '');
+                                        }
+                                    }
+                                "
                     >
                     @error('user.phone') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>

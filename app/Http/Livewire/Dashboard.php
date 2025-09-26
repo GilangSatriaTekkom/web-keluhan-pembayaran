@@ -56,10 +56,24 @@ class Dashboard extends Component
         $user = User::find($userId);
 
         $baseQuery = Tiket::with('user');
+
         if ($user->role === 'pelanggan') {
-            $baseQuery->where('user_id', $userId)->where('status', '!=', 'selesai')->whereMonth('created_at', now()->month)->get();
+            // tiket milik pelanggan sendiri
+            $baseQuery->where('user_id', $userId)
+                ->where('status', '!=', 'selesai')
+                ->whereMonth('created_at', now()->month);
+        } elseif ($user->role === 'teknisi') {
+            // tiket yang teknisinya include user login
+            $baseQuery->with('teknisis')
+                ->where('status', '!=', 'selesai')
+                ->whereMonth('created_at', now()->month)
+                ->whereHas('teknisis', function ($q) use ($userId) {
+                    $q->where('users.id', $userId);
+                });
         } else {
-            $baseQuery->whereMonth('created_at', now()->month)->where('status', '!=', 'selesai')->get();
+            // admin
+            $baseQuery->whereMonth('created_at', now()->month)
+                ->where('status', '!=', 'selesai');
         }
 
         $baseQueryTagihan = Tagihan::with('user');
@@ -71,6 +85,21 @@ class Dashboard extends Component
 
         // Query untuk tiket selesai
         $keluhan = (clone $baseQuery)
+            ->where(function($query) {
+                $query->where('category', 'like', "%{$this->searchAktif}%")
+                ->orwhere('id', 'like', "%{$this->searchAktif}%")
+                ->orWhere('status', 'like', "%{$this->searchAktif}%")
+                ->orWhereHas('user', function($q) {
+                    $q->where('name', 'like', "%{$this->searchAktif}%");
+                });
+
+            })
+            ->when($this->tanggalAktif, function($query) {
+                $query->whereDate('created_at', $this->tanggalAktif);
+            })
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'selesaiPage');
+        $keluhanTeknisi = (clone $baseQuery)
             ->where(function($query) {
                 $query->where('category', 'like', "%{$this->searchAktif}%")
                 ->orwhere('id', 'like', "%{$this->searchAktif}%")
@@ -118,19 +147,32 @@ class Dashboard extends Component
         $totalTagihanBelumLunas = Tagihan::where('status_pembayaran', 'belum_lunas')->get();
         $totalKeluhanBelumDitangani = Tiket::where('status', 'Menunggu')->get();
         $totalKeluhanSedangProses = Tiket::where('status', 'proses')->get();
+        $totalKeluhanTeknisi = Tiket::where('status', 'proses')
+        ->whereHas('teknisis', function ($query) {
+            $query->where('users.id', Auth::id());})->get();
+        $keluhanTeknisiBulanan = Tiket::where('status', 'selesai')
+                ->whereMonth('created_at', now()->month)
+                ->whereHas('teknisis', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                })
+                ->count();
+
 
         return view('livewire.dashboard',
         [
             'users' => User::all(),
             'jumlahTagihans' => $totalTagihan ? formatRupiah($totalTagihan) : null,
             'tagihanBelumLunas' => $tagihanBelumLunas,
+            'keluhanTeknisi' => $keluhanTeknisi,
             'keluhanBulanIni' => $keluhan,
             'tiket' => Tiket::all(),
             'keluhanDirespon' => $keluhanDirespon,
             'langganans' => Langganan::all(),
             'totalTagihanBelumLunas' => count($totalTagihanBelumLunas),
             'totalKeluhanBelumDitangani' => count($totalKeluhanBelumDitangani),
-            'totalKeluhanSedangProses' => count($totalKeluhanSedangProses)
+            'totalKeluhanSedangProses' => count($totalKeluhanSedangProses),
+            'totalKeluhanTeknisi' => count($totalKeluhanTeknisi),
+            'keluhanTeknisiBulanan' => $keluhanTeknisiBulanan
         ]
     );
     }

@@ -22,4 +22,16 @@ class Tiket extends Model
     {
         return $this->belongsTo(User::class, 'cs_menangani', 'id');
     }
+
+    public function teknisi()
+    {
+        return $this->belongsToMany(User::class, 'tiket_teknisi', 'tiket_id', 'teknisi_id')
+                    ->withTimestamps();
+    }
+
+    public function teknisis()
+    {
+        return $this->belongsToMany(User::class, 'tiket_teknisi', 'tiket_id', 'teknisi_id')
+        ->withTimestamps();;
+    }
 }

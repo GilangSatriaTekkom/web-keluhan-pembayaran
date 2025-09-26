@@ -55,7 +55,7 @@
                     <span class="nav-link-text ms-1">Tables</span>
                 </a>
             </li> --}}
-            {{-- @if (auth()->user()->role == 'pelanggan') --}}
+            @if (auth()->user()->role == 'pelanggan' || auth()->user()->role == 'admin')
             <li class="nav-item">
                 <a class="nav-link text-white {{ Route::currentRouteName() == 'tabel-pembayaran.index' ? ' active bg-gradient-primary' : '' }} "
                     href="{{ route('tabel-pembayaran.index') }}">
@@ -65,7 +65,7 @@
                     <span class="nav-link-text ms-1">Pembayaran</span>
                 </a>
             </li>
-            {{-- @endif --}}
+            @endif
             <li class="nav-item">
                 <a class="nav-link text-white {{ Route::currentRouteName() == 'tabel-keluhan.index' ? ' active bg-gradient-primary' : '' }} "
                     href="{{ route('tabel-keluhan.index') }}">
@@ -95,6 +95,15 @@
                         <i class="material-icons opacity-10">person</i>
                     </div>
                     <span class="nav-link-text ms-1">Pelanggan</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {{ Route::currentRouteName() == 'teknisi' ? ' active bg-gradient-primary' : '' }}  "
+                    href="{{ route('teknisi') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="material-icons opacity-10">person</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Teknisi</span>
                 </a>
             </li>
             @endif

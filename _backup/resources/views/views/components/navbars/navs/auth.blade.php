@@ -20,11 +20,26 @@
                 @csrf
             </form>
             <ul class="navbar-nav  justify-content-end">
-                <li class="nav-item d-flex align-items-center">
+                {{-- <li class="nav-item d-flex align-items-center">
                     <a href="javascript:;" class="nav-link text-body font-weight-bold px-0">
                         <i class="fa fa-user me-sm-1"></i>
                         <livewire:auth.logout/>
                     </a>
+                </li> --}}
+                <li class="nav-item dropdown d-flex align-items-center">
+                    <a href="javascript:;" class="nav-link text-body font-weight-bold px-0 dropdown-toggle"
+                    id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-user me-sm-1"></i>
+                        <span class="d-sm-inline d-none">Akun</span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end px-2 py-2" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item text-danger" href="javascript:void(0);">
+                                <livewire:auth.logout />
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
                     <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">

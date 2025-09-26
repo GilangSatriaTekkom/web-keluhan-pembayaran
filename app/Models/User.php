@@ -70,6 +70,12 @@ class User extends Authenticatable
         return $this->hasMany(Tiket::class);
     }
 
+    public function tiketTeknisi()
+    {
+        return $this->belongsToMany(Tiket::class, 'tiket_teknisi', 'teknisi_id', 'tiket_id')
+                    ->withTimestamps();
+    }
+
 
     protected static function booted()
     {
