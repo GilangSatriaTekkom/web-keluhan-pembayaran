@@ -16,6 +16,7 @@ use App\Http\Livewire\Profile;
 use App\Http\Livewire\RTL;
 use App\Http\Livewire\StaticSignIn;
 use App\Http\Livewire\StaticSignUp;
+use App\Http\Livewire\StaticPage\StaticIndex;
 use App\Http\Livewire\Tables;
 use App\Http\Livewire\VirtualReality;
 use App\Http\Livewire\TabelKeluhan;
@@ -38,6 +39,7 @@ use App\Http\Controllers\MidtransController;
 use Illuminate\Support\Facades\Storage;
 
 use App\Models\User;
+use App\Services\DialogflowHandler;
 use GuzzleHttp\Middleware;
 
 /*
@@ -51,14 +53,27 @@ use GuzzleHttp\Middleware;
 |
 */
 
-Route::get('/', function(){
-    return redirect('sign-in');
-});
+Route::get('/', StaticIndex::class)->name('landing-page');
+
+Route::post('/dialogflow-cancel', [\App\Services\DialogflowHandler::class, 'cancelKeluhan'])->name('dialogflow.cancel');
+Route::get('/contact', function(){
+    $phoneNumber = '6289609875689';
+    $url = "https://wa.me/{$phoneNumber}";
+    return redirect()->away($url);
+})->name('contact');
 
 Route::get('forgot-password', ForgotPassword::class)->middleware('guest')->name('password.forgot');
 Route::get('reset-password/{id}', ResetPassword::class)->middleware('signed')->name('reset-password');
 
 
+Route::get('/redirect-web', function () {
+    // ambil url target dari query string
+    $targetUrl = request()->query('redirect_url');
+
+    Log::warning("Redirecting to: " . $targetUrl);
+
+    return redirect()->away($targetUrl);
+})->name('redirect.web');
 
 Route::get('sign-up', Register::class)->middleware('guest')->name('register');
 Route::get('sign-in', Login::class)->middleware('guest')->name('login');

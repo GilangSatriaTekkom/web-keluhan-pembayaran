@@ -21,7 +21,7 @@
     <link rel="apple-touch-icon" sizes="76x76" href="{{ secure_asset('assets') }}/img/apple-icon.png">
     <link rel="icon" type="image/png" href="{{ secure_asset('assets') }}/img/favicon.png">
     <title>
-        Material Dashboard 2 by Creative Tim & UPDIVISION
+        Sukabumi Network
     </title>
 
     <!-- Metas -->
@@ -76,12 +76,16 @@
             background-color: #f5f5f5;
         }
 
+        .modal-backdrop {
+            z-index: 1040000 !important;
+        }
+
         /* Warna Theme Biru Modern */
         df-messenger {
-            --df-messenger-bot-message: #e73f7d;
-            --df-messenger-user-message: #cf1db1;
-            --df-messenger-font-color: #ffffff;
-            --df-messenger-button-titlebar-color: #d81b60;
+            --df-messenger-bot-message: #e5efff;
+            --df-messenger-user-message: #e5efff;
+            --df-messenger-font-color: #020a14;
+            --df-messenger-button-titlebar-color: #4285f4;
             --df-messenger-chat-background-color: #f9f9f9;
             --df-messenger-titlebar-background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
             z-index: 200000 !important;
@@ -120,7 +124,10 @@
     class="g-sidenav-show {{ Route::currentRouteName() == 'rtl' ? 'rtl' : '' }} {{ Route::currentRouteName() == 'register' || Route::currentRouteName() == 'static-sign-up' ? '' : 'bg-gray-200' }}">
     {{ $slot }}
 
+    @livewire('components.buat-keluhan-modal')
+    @livewire('components.login-modal')
     <script src="{{ secure_asset('assets') }}/js/core/popper.min.js"></script>
+    <script src="{{ secure_asset('assets') }}/js/custom.js"></script>
     <script src="{{ secure_asset('assets') }}/js/core/bootstrap.min.js"></script>
     <script src="{{ secure_asset('assets') }}/js/plugins/perfect-scrollbar.min.js"></script>
     <script src="{{ secure_asset('assets') }}/js/plugins/smooth-scrollbar.min.js"></script>
@@ -195,27 +202,171 @@
 @endif
 
 <script>
-document.querySelector('df-messenger')
-  .addEventListener('df-response-received', function(event) {
-    const detectIntentResponse = event.detail.response;
+    document.querySelector('df-messenger')
+        .addEventListener('df-response-received', function(event) {
+        const detectIntentResponse = event.detail.response;
 
-    if (!detectIntentResponse) return;
+        if (!detectIntentResponse) return;
 
-    const intent = detectIntentResponse.queryResult?.intent?.displayName || '';
-    const fulfillmentMessages = detectIntentResponse.queryResult?.fulfillmentMessages || [];
-      fulfillmentMessages.forEach(msg => {
+        const intent = detectIntentResponse.queryResult?.intent?.displayName || '';
+        const fulfillmentMessages = detectIntentResponse.queryResult?.fulfillmentMessages || [];
+            fulfillmentMessages.forEach(msg => {
 
-        if (msg.payload?.midtrans?.snap_token) {
-          const token = msg.payload.midtrans.snap_token;
-          console.warn('Tidak ada messages di response:', token);
-          snap.pay(token, {
-            onSuccess: function(result){ console.log('Pembayaran sukses', result); },
-            onPending: function(result){ console.log('Pembayaran pending', result); },
-            onError: function(result){ console.error('Pembayaran gagal', result); }
-          });
+            if (msg.payload?.midtrans?.snap_token) {
+                const token = msg.payload.midtrans.snap_token;
+                console.warn('Tidak ada messages di response:', token);
+                snap.pay(token, {
+                onSuccess: function(result){ console.log('Pembayaran sukses', result); },
+                onPending: function(result){ console.log('Pembayaran pending', result); },
+                onError: function(result){ console.error('Pembayaran gagal', result); }
+                });
+            }
+            });
+    });
+
+    // Contoh: jika kamu pakai Dialogflow Messenger Webhook
+    window.addEventListener('df-response-received', function(event) {
+        const responses = event.detail.response.queryResult.fulfillmentMessages;
+        responses.forEach(msg => {
+            if (msg.payload && msg.payload.openModal) {
+                // Trigger modal Bootstrap (ganti id sesuai modal kamu)
+                if (msg.payload.openModal === 'buatKeluhan') {
+                    const modal = new bootstrap.Modal(document.getElementById('buatKeluhanModal'));
+                    setTimeout(() => {
+                        modal.show();
+                        const dfMessenger = document.querySelector('df-messenger');
+                        const payload = [
+                            {
+                                "type": "description",
+                                "text": ["Menunggu proses pengisian form...."]
+                            }
+                        ];
+                        dfMessenger.renderCustomCard(payload);
+                    }, 3000);
+
+                }
+                if (msg.payload.openModal === 'buatAkun') {
+                    const modal = new bootstrap.Modal(document.getElementById('buatAkun'));
+                    setTimeout(() => {
+                        modal.show();
+                        const dfMessenger = document.querySelector('df-messenger');
+                        const payload = [
+                            {
+                                "type": "description",
+                                "text": ["Menunggu proses pengisian form...."]
+                            }
+                        ];
+                        dfMessenger.renderCustomCard(payload);
+                    }, 3000);
+                }
+                if (msg.payload.openModal === 'redirectWeb') {
+                    const parameters = event.detail.response.queryResult.parameters;
+                    window.location.href = parameters.redirect_url;
+                }
+            }
+        });
+    });
+
+    let closedBySubmit = false; // deklarasi di global scope
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const keluhanModal = document.getElementById('buatKeluhanModal');
+        const loginModal = document.getElementById('buatAkun');
+        if (keluhanModal) {
+            keluhanModal.addEventListener('hidden.bs.modal', function () {
+                if (closedBySubmit) {
+                    // reset flag setelah submit sukses
+                    closedBySubmit = false;
+                    return;
+                }
+
+                const dfMessenger = document.querySelector('df-messenger');
+                if (dfMessenger) {
+                    const payload = [
+                        {
+                            "type": "description",
+                            "text": ["Anda telah membatalkan pembuatan keluhan. Ada lagi yang bisa saya bantu ?"]
+                        }
+                    ];
+                    dfMessenger.renderCustomCard(payload);
+                }
+            });
         }
-      });
-  });
+
+        loginModal.addEventListener('hidden.bs.modal', function () {
+            if (closedBySubmit) {
+                // reset flag setelah submit sukses
+                closedBySubmit = false;
+                return;
+            }
+
+            const dfMessenger = document.querySelector('df-messenger');
+            if (dfMessenger) {
+                const payload = [
+                    {
+                        "type": "description",
+                        "text": ["Anda telah membatalkan pembuatan Akun. Ada lagi yang bisa saya bantu ?"]
+                    }
+                ];
+                dfMessenger.renderCustomCard(payload);
+            }
+        });
+    });
+
+    document.addEventListener('livewire:init', function () {
+        Livewire.on('buatKeluhan', function(data) {
+            const modalEl = document.getElementById('buatKeluhanModal');
+            const modal = bootstrap.Modal.getInstance(modalEl)
+            || new bootstrap.Modal(modalEl);
+
+            closedBySubmit = true; // set flag dulu
+            modal.hide();          // baru tutup modal
+
+            const dfMessenger = document.querySelector('df-messenger');
+            const payload = [
+                {
+                    "type": "description",
+                    "text": ["Keluhan anda sudah selesai dibuat. Apakah ada lagi yang bisa saya bantu ?"]
+                }
+            ];
+            dfMessenger.renderCustomCard(payload);
+        });
+        Livewire.on('buatAkun', function(data) {
+            const modalEl = document.getElementById('buatAkun');
+            const modal = bootstrap.Modal.getInstance(modalEl)
+            || new bootstrap.Modal(modalEl);
+
+            closedBySubmit = true; // set flag dulu
+            modal.hide();          // baru tutup modal
+
+            const dfMessenger = document.querySelector('df-messenger');
+            const payload = [
+                {
+                    "type": "description",
+                    "text": ["Selamat... Akun baru anda telah selesai dibuat, Anda sudah bisa login dengan menekan button dibawah, Apakah ada lagi yang bisa saya bantu lagi ?"]
+                },
+                {
+                    "link" : "{{ route('login') }}",
+                    "text": "Masuk Laman Login",
+                    "type": "button",
+                        "icon": {
+                            "color": "#206ed3ff",
+                            "type": "chevron_right"
+                        }
+                },
+            ];
+            dfMessenger.renderCustomCard(payload);
+        });
+    });
+
+
+    document.addEventListener('livewire:load', () => {
+        Livewire.on('redirect', (data) => {
+            setTimeout(() => {
+                window.location.href = data.url;
+            }, data.delay ?? 0);
+        });
+    });
 </script>
 
 </html>

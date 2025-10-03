@@ -35,6 +35,13 @@
         </main>
         <x-plugins></x-plugins>
     </div>
+    @elseif (in_array(request()->route()->getName(),['landing-page']))
+        <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+
+            {{ $slot }}
+
+            <x-footers.auth></x-footers.auth>
+        </main>
     @else
     <x-navbars.sidebar></x-navbars.sidebar>
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">

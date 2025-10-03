@@ -143,8 +143,8 @@
         <div class="col mt-4 mb-4">
             @auth
                 @if (Auth::user()->role == 'admin')
-                <div class="col-lg-12 row mt-4 col-md-6 mb-md-0 mb-4">
-                    <div class="col-6">
+                <div class="col-lg-12 sm:col md:row mt-4 col-md-6 mb-md-0 mb-4">
+                    <div class="sm:col-12 md:col-6">
                         <div class="card">
                             <div class="card-header pb-0">
                                 <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
@@ -162,12 +162,12 @@
                                                 <!-- Button trigger modal -->
 
 
-                                            <div class="col" style="background-color: white; border-radius: 999px;">
+                                            <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                 <input type="text" wire:model.live.debounce.300ms="searchAktif"
                                                     class="form-control"
                                                     placeholder="Cari tiket, customer, atau kategori...">
                                             </div>
-                                            <div class="col" style="background-color: white; border-radius: 999px;">
+                                            <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                 <input type="date" wire:model.live="tanggalAktif" class="form-control">
                                             </div>
                                         </div>
@@ -239,7 +239,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="sm:col-12 md:col-6">
                         <div class="card">
                                 <div class="card-header pb-0">
                                     <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
@@ -257,12 +257,12 @@
                                                         <!-- Button trigger modal -->
 
 
-                                                    <div class="col" style="background-color: white; border-radius: 999px;">
+                                                    <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                         <input type="text" wire:model.live.debounce.300ms="searchSelesai"
                                                             class="form-control"
                                                             placeholder="Cari tiket, customer, atau kategori...">
                                                     </div>
-                                                    <div class="col" style="background-color: white; border-radius: 999px;">
+                                                    <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                         <input type="date" wire:model.live="tanggalSelesai" class="form-control">
                                                     </div>
                                                 </div>
@@ -332,7 +332,7 @@
                 </div>
                 @endif
                 @if (Auth::user()->role == 'teknisi')
-                <div class="col-lg-12 row mt-4 col-md-6 mb-md-0 mb-4">
+                <div class="col-lg-12 sm:col md:row mt-4 col-md-6 mb-md-0 mb-4">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header pb-0">
@@ -343,12 +343,12 @@
                                     <div class="px-4 mt-4 row">
                                         <div class="row text-end mb-3" style="margin-right: 18px; gap: 12px; display: flex;">
                                                 <!-- Button trigger modal -->
-                                            <div class="col" style="background-color: white; border-radius: 999px;">
+                                            <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                 <input type="text" wire:model.live.debounce.300ms="searchAktif"
                                                     class="form-control"
                                                     placeholder="Cari tiket, customer, atau kategori...">
                                             </div>
-                                            <div class="col" style="background-color: white; border-radius: 999px;">
+                                            <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                 <input type="date" wire:model.live="tanggalAktif" class="form-control">
                                             </div>
                                         </div>
@@ -423,8 +423,8 @@
                 </div>
                 @endif
                 @if (Auth::user()->role == 'pelanggan')
-                    <div class="col-lg-12 row col-md-6 mb-md-0 mb-4">
-                        <div class="col-6">
+                    <div class="col-lg-12 sm:col md:row col-md-6 mb-md-0 mb-4">
+                        <div class="sm:col-12 md:col-6">
                             <div class="card">
                                 <div class="card-header pb-0">
                                     <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
@@ -436,12 +436,12 @@
                                                     <!-- Button trigger modal -->
 
 
-                                                <div class="col" style="background-color: white; border-radius: 999px;">
+                                                <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                     <input type="text" wire:model.live.debounce.300ms="searchAktif"
                                                         class="form-control"
                                                         placeholder="Cari tiket, customer, atau kategori...">
                                                 </div>
-                                                <div class="col" style="background-color: white; border-radius: 999px;">
+                                                <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                     <input type="date" wire:model.live="tanggalAktif" class="form-control">
                                                 </div>
                                             </div>
@@ -513,7 +513,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6">
+                        <div class="sm:col-12 md:col-6">
                             <div class="card">
                                 <div class="card-header pb-0">
                                     <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
@@ -524,12 +524,12 @@
                                             <div class="col row text-end mb-3" style="margin-right: 18px; gap: 12px; display: flex;">
 
 
-                                                    <div class="col" style="background-color: white; border-radius: 999px;">
+                                                    <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                         <input type="text" wire:model.live.debounce.300ms="searchSelesai"
                                                             class="form-control"
                                                             placeholder="Cari tiket, customer, atau kategori...">
                                                     </div>
-                                                    <div class="col" style="background-color: white; border-radius: 999px;">
+                                                    <div class="sm:col-12 md:col" style="background-color: white; border-radius: 999px;">
                                                         <input type="date" wire:model.live="tanggalSelesai" class="form-control">
                                                     </div>
                                                 </div>

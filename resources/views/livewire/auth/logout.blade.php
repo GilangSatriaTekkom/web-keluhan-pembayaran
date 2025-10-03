@@ -1,2 +1,2 @@
-<span wire:click="destroy" class="d-sm-inline d-none">Sign
+<span wire:click="destroy" class="d-sm-inline ">Sign
     Out</span>
