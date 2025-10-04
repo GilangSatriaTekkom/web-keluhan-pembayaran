@@ -6,17 +6,18 @@ use Livewire\Component;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use App\Models\Tiket;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class Keluhan extends Component
 {
     public $tiket = [
-        'category' => '',
+        'judul' => '',
         'status' => 'Menunggu',
         'description' => '',
     ];
 
     protected $rules = [
-        'tiket.category' => 'required|string|max:255',
+        'tiket.judul' => 'required|string|max:255',
         'tiket.status' => 'required|string|max:50',
         'tiket.description' => 'required|string',
     ];
@@ -40,47 +41,47 @@ class Keluhan extends Component
     public function submit()
     {
         try {
-        $this->validate();
+            $this->validate();
 
-        Tiket::create([
-            'user_id' => Auth::id(), // ambil user yang login
-            'category' => $this->tiket['category'],
-            'status' => $this->tiket['status'],
-            'description' => $this->tiket['description'],
-        ]);
+            Tiket::create([
+                'user_id' => Auth::id(), // ambil user yang login
+                'judul' => $this->tiket['judul'],
+                'status' => $this->tiket['status'],
+                'description' => $this->tiket['description'],
+            ]);
 
-        LivewireAlert::title('Buat Keluhan Berhasil!')
-                ->success()
-                ->withConfirmButton('Ok')
-                ->onConfirm('return')
-                ->show();
+            LivewireAlert::title('Buat Keluhan Berhasil!')
+                    ->success()
+                    ->withConfirmButton('Ok')
+                    ->onConfirm('return')
+                    ->show();
 
-        // $this->reset('tiket');
+            // $this->reset('tiket');
         }
 
         catch (\Exception $e) {
-             LivewireAlert::title('Ada Kesalahan!')
+            LivewireAlert::title('Ada Kesalahan!')
                 ->error()
                 ->show();
         }
     }
 
-    public function store(Request $request)
-    {
-        dd("Tiket Keluhan", $request);
-       $tiket = Tiket::create([
-            'user_id' => Auth::id(),
-            'category' => $request, // default value
-            'status' => 'menunggu', // status default
-            'description' => $request->deskripsi_keluhan,
-            'judul' => $request->judul_keluhan // tambahkan kolom judul jika perlu
-        ]);
+    // public function store(Request $request)
+    // {
 
-        return [
-            'fulfillmentText' => "Keluhan Anda telah tercatat. ID Tiket: {$tiket->id}",
-            'tiket_id' => $tiket->id
-        ];
-    }
+    //    $tiket = Tiket::create([
+    //         'user_id' => Auth::id(),
+    //         'judul' => $request, // default value
+    //         'status' => 'menunggu', // status default
+    //         'description' => $request->deskripsi_keluhan,
+    //         'judul' => $request->judul_keluhan // tambahkan kolom judul jika perlu
+    //     ]);
+
+    //     return [
+    //         'fulfillmentText' => "Keluhan Anda telah tercatat. ID Tiket: {$tiket->id}",
+    //         'tiket_id' => $tiket->id
+    //     ];
+    // }
 
     public function return() {
         return redirect()->route('tabel-keluhan.index');

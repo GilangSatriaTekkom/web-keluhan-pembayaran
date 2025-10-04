@@ -182,7 +182,7 @@
                                             <tr>
                                                 <th
                                                     class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    Kategori</th>
+                                                    Judul</th>
                                                 <th
                                                     class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                                     Tanggal</th>
@@ -204,7 +204,7 @@
                                                     <tr>
                                                         <td>
                                                             <div class="d-flex flex-column justify-content-center">
-                                                                <h6 class="mb-0 text-sm">{{ $keluhan->category }}</h6>
+                                                                <h6 class="mb-0 text-sm">{{ $keluhan->judul }}</h6>
                                                             </div>
                                                         </td>
                                                         <td>
@@ -363,7 +363,7 @@
                                             <tr>
                                                 <th
                                                     class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    Kategori</th>
+                                                    Judul</th>
                                                 <th
                                                     class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                                     Tanggal</th>
@@ -385,7 +385,7 @@
                                                     <tr>
                                                         <td>
                                                             <div class="d-flex flex-column justify-content-center">
-                                                                <h6 class="mb-0 text-sm">{{ $keluhan->category }}</h6>
+                                                                <h6 class="mb-0 text-sm">{{ $keluhan->judul }}</h6>
                                                             </div>
                                                         </td>
                                                         <td>
@@ -456,7 +456,7 @@
                                                 <tr>
                                                     <th
                                                         class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7">
-                                                        Kategori</th>
+                                                        Judul</th>
                                                     <th
                                                         class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                                         Tanggal</th>
@@ -478,7 +478,7 @@
                                                         <tr>
                                                             <td>
                                                                 <div class="d-flex flex-column justify-content-center">
-                                                                    <h6 class="mb-0 text-sm">{{ $keluhan->category }}</h6>
+                                                                    <h6 class="mb-0 text-sm">{{ $keluhan->judul }}</h6>
                                                                 </div>
                                                             </td>
                                                             <td>

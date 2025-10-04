@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('tikets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('category');
+            $table->string('judul');
+            $table->string('category')->nullable();
             $table->enum('status', ['menunggu', 'selesai', 'proses'])->default('menunggu');
             $table->text('description');
             $table->foreignId('cs_menangani')->nullable()->constrained('users')->onDelete('cascade');

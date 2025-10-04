@@ -230,6 +230,42 @@ class DatabaseSeeder extends Seeder
                 $category = $categories[array_rand($categories)];
                 $status = $statuses[array_rand($statuses)];
 
+                $tiketData = [
+                    'Gangguan Internet' => [
+                        ['judul' => 'Internet sering putus-putus', 'desc' => 'Internet sering putus-putus dalam beberapa hari terakhir.'],
+                        ['judul' => 'Kecepatan tidak sesuai paket', 'desc' => 'Kecepatan internet tidak sesuai dengan paket yang dijanjikan.'],
+                        ['judul' => 'Internet mati total', 'desc' => 'Internet mati total sejak pagi hari.'],
+                        ['judul' => 'Gangguan jaringan lokal', 'desc' => 'Laporan gangguan jaringan di area tempat tinggal.'],
+                        ['judul' => 'Gangguan setelah hujan', 'desc' => 'Laporan gangguan setelah hujan deras.'],
+                        ['judul' => 'Buffering saat streaming', 'desc' => 'Kendala streaming video yang sering buffer.'],
+                        ['judul' => 'Modem sering restart', 'desc' => 'Laporan modem yang sering restart sendiri.'],
+                        ['judul' => 'Latency tinggi gaming', 'desc' => 'Kendala gaming online dengan latency tinggi.'],
+                        ['judul' => 'Wifi tidak stabil', 'desc' => 'Kendala akses wifi di beberapa titik di rumah.'],
+                        ['judul' => 'Internet lemot malam hari', 'desc' => 'Kendala akses internet di malam hari.'],
+                    ],
+                    'Billing' => [
+                        ['judul' => 'Komplain tagihan bulan ini', 'desc' => 'Minta penjelasan detail tagihan bulan ini.'],
+                        ['judul' => 'Tagihan tidak wajar', 'desc' => 'Komplain mengenai tagihan yang terlihat tidak wajar.'],
+                    ],
+                    'Layanan Tambahan' => [
+                        ['judul' => 'Upgrade paket internet', 'desc' => 'Permintaan upgrade paket internet ke kecepatan yang lebih tinggi.'],
+                        ['judul' => 'Pemindahan instalasi', 'desc' => 'Permintaan pemindahan instalasi ke ruangan lain.'],
+                        ['judul' => 'Penjadwalan ulang instalasi', 'desc' => 'Permintaan penjadwalan ulang instalasi.'],
+                        ['judul' => 'Permintaan informasi promo', 'desc' => 'Permintaan info promo terbaru.'],
+                        ['judul' => 'Ganti password wifi', 'desc' => 'Permintaan ganti password wifi.'],
+                    ],
+                    'Teknis' => [
+                        ['judul' => 'Gangguan akses website tertentu', 'desc' => 'Kendala teknis saat mengakses beberapa website tertentu.'],
+                        ['judul' => 'Bantuan setup jaringan', 'desc' => 'Permintaan bantuan teknis untuk setup jaringan.'],
+                        ['judul' => 'Konsultasi perangkat wifi', 'desc' => 'Konsultasi mengenai perangkat wifi yang cocok untuk rumah.'],
+                    ],
+                    'Lainnya' => [
+                        ['judul' => 'Permintaan layanan tambahan', 'desc' => 'Permintaan informasi atau konsultasi di luar kategori lain.'],
+                    ]
+                ];
+
+                $pair = $tiketData[$category][array_rand($tiketData[$category])];
+
                 // Deskripsi tiket yang lebih variatif
                 $descriptions = [
                     'Internet sering putus-putus dalam beberapa hari terakhir.',
@@ -254,11 +290,13 @@ class DatabaseSeeder extends Seeder
                     'Permintaan ganti password wifi.'
                 ];
 
+
                 $tiket = Tiket::create([
-                    'user_id' => $user->id,
-                    'category' => $category,
-                    'status' => $status,
-                    'description' => $descriptions[array_rand($descriptions)],
+                    'user_id'    => $user->id,
+                    'judul'      => $pair['judul'],
+                    'category'   => $category,
+                    'status'     => $status,
+                    'description'=> $pair['desc'],
                     'created_at' => now()->subDays(rand(1, 365)),
                     'updated_at' => now()->subDays(rand(1, 365)),
                 ]);

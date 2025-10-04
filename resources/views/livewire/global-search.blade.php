@@ -64,8 +64,8 @@
                             <li class="border-b py-1">
                                 <a href="{{ route('lihat.keluhan', $t->id) }}"
                                 class="hover:underline block truncate"
-                                title="{{ $t->category }} - {{ $t->description }} - {{ $t->status }}">
-                                    {{ $t->category }} - {{ $t->description }} - {{ $t->status }}
+                                title="{{ $t->judul }} - {{ $t->description }} - {{ $t->status }}">
+                                    {{ $t->judul }} - {{ $t->description }} - {{ $t->status }}
                                 </a>
                             </li>
                         @endforeach

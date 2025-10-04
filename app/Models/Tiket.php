@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tiket extends Model
 {
-      protected $fillable = ['user_id', 'category', 'status', 'description'];
+      protected $fillable = ['user_id', 'judul', 'status', 'description'];
 
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);

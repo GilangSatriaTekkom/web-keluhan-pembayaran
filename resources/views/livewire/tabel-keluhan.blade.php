@@ -93,7 +93,7 @@
                                                             <p class="text-sm font-weight-bold mb-0">{{ $t->user->name }}</p>
                                                         </td>
                                                         <td class="align-middle text-center">
-                                                            <span class="text-xs font-weight-bold">{{ $t->category }}</span>
+                                                            <span class="text-xs font-weight-bold">{{ $t->judul }}</span>
                                                         </td>
                                                         <td class="align-middle text-center">
                                                             <span class="text-sm font-weight-bold mb-0">{{ formatTanggalIndonesia($t->created_at) }}</span>
@@ -188,7 +188,7 @@
                                                             <p class="text-sm font-weight-bold mb-0">{{ $t->user->name }}</p>
                                                         </td>
                                                         <td class="align-middle text-center">
-                                                            <span class="text-xs font-weight-bold">{{ $t->category }}</span>
+                                                            <span class="text-xs font-weight-bold">{{ $t->judul }}</span>
                                                         </td>
                                                         <td class="align-middle text-center">
                                                             <span class="text-sm font-weight-bold mb-0">{{ formatTanggalIndonesia($t->updated_at) }}</span>

@@ -16,9 +16,9 @@
         <form wire:submit.prevent="alert">
             <div class="row">
                 <div class="mb-3">
-                    <label class="form-label">Sebutkan kategori keluhan anda</label>
-                    <input type="text" placeholder="Gangguan Internet" wire:model.defer="tiket.category" class="form-control border border-2 p-2">
-                    @error('tiket.category') <small class="text-danger">{{ $message }}</small> @enderror
+                    <label class="form-label">Sebutkan keluhan anda</label>
+                    <input type="text" placeholder="Gangguan Internet" wire:model.defer="tiket.judul" class="form-control border border-2 p-2">
+                    @error('tiket.judul') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
                 <div class="mb-3 col-md-12">

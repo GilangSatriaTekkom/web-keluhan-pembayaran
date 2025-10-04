@@ -12,7 +12,7 @@ class BuatKeluhanModal extends Component
 {
 
     public $tiket = [
-        'category' => '',
+        'judul' => '',
         'status' => 'Menunggu',
         'description' => '',
     ];
@@ -20,14 +20,14 @@ class BuatKeluhanModal extends Component
     public function submitKeluhan()
     {
         $this->validate([
-            'tiket.category' => 'required|string|max:255',
+            'tiket.judul' => 'required|string|max:255',
             'tiket.status' => 'required|string|max:255',
             'tiket.description' => 'required|string',
         ]);
 
         Tiket::create([
             'user_id' => Auth::id(),
-            'category' => $this->tiket['category'],
+            'judul' => $this->tiket['judul'],
             'status' => $this->tiket['status'],
             'description' => $this->tiket['description'],
         ]);

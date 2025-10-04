@@ -2,7 +2,7 @@
     <div class="card card-body mx-3 mx-md-4">
         @if($complaint)
             <div class="d-flex row justify-content-between align-items-center mb-4">
-                <h4 class="col">Keluhan: {{ $complaint->category }}</h4>
+                <h4 class="col">Keluhan: {{ $complaint->judul }}</h4>
                 {{-- <button wire:click="$emit('closeDetail')" class="btn btn-sm btn-secondary">
                     <i class="fas fa-times"></i> Tutup
                 </button> --}}
@@ -20,7 +20,7 @@
 
             <div class="row mb-3">
                 {{-- <div class="col-md-6">
-                    <h6>Keluhan Pelanggan</h6>
+                    <h6>Kategori Keluhan</h6>
                     <p class="text-muted">{{ $complaint->category }}</p>
                 </div> --}}
             </div>

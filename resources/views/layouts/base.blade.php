@@ -80,6 +80,14 @@
             z-index: 1040000 !important;
         }
 
+        .modal {
+            z-index: 1050000 !important;
+        }
+
+        div:where(.swal2-container) {
+            z-index: 1060000 !important;
+        }
+
         /* Warna Theme Biru Modern */
         df-messenger {
             --df-messenger-bot-message: #e5efff;

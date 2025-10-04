@@ -60,7 +60,7 @@
                                             <tr>
                                                 <td>
                                                     <div class="d-flex flex-column justify-content-center">
-                                                        <h6 class="mb-0 text-sm">{{ $keluhan->category }}</h6>
+                                                        <h6 class="mb-0 text-sm">{{ $keluhan->judul }}</h6>
                                                     </div>
                                                 </td>
                                                 <td>

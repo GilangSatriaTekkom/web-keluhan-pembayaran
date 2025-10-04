@@ -22,7 +22,7 @@ use Livewire\Attributes\On;
 class DialogflowHandler extends Controller
 {
     protected $isAnonymous = true;
-    protected $userId;
+    protected $userId = 2;
     protected $buttonLamanLogin;
     protected $welcomeChipsGuest = [
                                     'Buat akun',
@@ -101,8 +101,9 @@ class DialogflowHandler extends Controller
             'bayarTagihan_select'    => $this->handleBillPaymentFilter($parameters, $session),
             'bayarTagihan_proses'    => $this->processBillPayment($outputContexts, $session, $queryResult),
 
-            'CekKeluhan'    => $this->handleComplaintList($parameters, $session),
-            'CekKeluhan_filter'    => $this->handleComplaintListFilter($parameters, $session),
+            'CekKeluhan'    => $this->handleComplaintList($queryText, $parameters, $session),
+            'CekKeluhan_filter'    => $this->handleComplaintListFilter($queryText, $parameters, $session),
+            'CekKeluhan_filter - nama' => $this->handleComplaintListFilter($queryText, $parameters, $session),
 
 
             'CekTagihan'    => $this->handleBillList($queryText, $parameters, $session),
@@ -203,7 +204,7 @@ class DialogflowHandler extends Controller
                     'payload' => [
                         'richContent' => [
                             [
-                                $this->payloadDescription(null, ["Ok, saya batalkan permintaan anda. ada lagi yang bisa saya bantu ?"])
+                                $this->payloadDescription(null, ["Ok, saya batalkan permintaan anda. Apa ada lagi yang bisa saya bantu ?"])
                             ]
                         ]
                     ]
@@ -264,8 +265,29 @@ class DialogflowHandler extends Controller
 
     protected function downloadInvoice(array $params, string $session, $invoiceService) {
 
-        if ($this->isAnonymous || $this->userId === null) {
-            return $this->createLoginRequiredResponse('cek tagihan');
+        // if ($this->isAnonymous || $this->userId === null) {
+        //     return $this->createLoginRequiredResponse('cek tagihan');
+        // }
+
+        $filledParams = array_filter($params, function ($value) {
+            return !empty($value);
+        });
+
+        if(count($filledParams) === 0) {
+            return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            'richContent' => [
+                                [
+                                    $this->payloadDescription(null, ["Boleh beritahu saya invoice yang ingin di download     ?"])
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'outputContexts' => $this->payloadContext(["tagihaninvoice_filter", "tagihaninvoice_context"], $session)['outputContexts']
+            ];
         }
 
         $userId = $this->userId;
@@ -273,12 +295,6 @@ class DialogflowHandler extends Controller
 
         // Inisialisasi query
         $query = Tagihan::query()->where('user_id', $userId)->where('status_pembayaran', 'lunas');
-
-        // Filter berdasarkan periode (sys.date)
-        if (!empty($params['periode'])) {
-            // Jika periode berupa range (misal "2025-08"), bisa disesuaikan logikanya
-            $query->whereDate('periode', '=', Carbon::parse($params['periode'])->format('Y-m-d'));
-        }
 
         if (!empty($params['tanggal'])) {
             $tanggal = $params['tanggal'] ?? null;
@@ -336,94 +352,50 @@ class DialogflowHandler extends Controller
             return $this->createTextResponse("Tidak ada invoice");
         }
 
+
+
+        $listText = [];
+        $redirectWeb = [];
+        $url = rtrim(env('APP_STATIC_URL'), '/ ');
+
         foreach ($bills as $bill) {
-            $richContent[] =
-                [
-                    'type' => 'description',
-                    'title' => "Tagihan #" . $bill->id,
-                    'text' => [
-                        "💵 Jumlah:" . formatRupiah($bill->jumlah_tagihan),
-                        "📅 Jatuh Tempo: " . $bill->tgl_jatuh_tempo,
-                        "🔄 Status: " . $this->getStatusBadge($bill->status_pembayaran)
-                    ],
-                    'icon' => [
-                        'type' => 'receipt',
-                        'color' => '#FF5722'
-                    ]
-                ];
-        }
+            $paket = $bill->langganan->paket->nama_paket;
+            $tgl_jatuh_tempo = $bill->tgl_jatuh_tempo;
+            $jumlah_tagihan = formatRupiah($bill->jumlah_tagihan);
 
-        if (count($bills) > 1) {
-            // ambil id tiap bills untuk chips
-            $billIds = $bills->pluck('id')->toArray();
+            $listText[] = "Invoice {$paket} - Tenggat {$tgl_jatuh_tempo} - {$jumlah_tagihan}";
 
-            // buat chips dari billIds
-            $chips = $this->createChipsResponse(
-                array_map(fn($id) => 'Invoice ' . $id, $billIds)
-            );
+            $fileName = 'struk_' . $bill->id . '.pdf';
 
-            return [
-                'fulfillmentMessages' => [
-                    [
-                        'payload' => [
-                            'richContent' => [
-                                $richContent,
-                                [
-                                    [
-                                        'type' => 'info',
-                                        'subtitle' => ["Ada " . count($bills) . " tagihan yang punya invoice. Silakan pilih salah satu."]
-                                    ]
-                                ],
-                            $chips['fulfillmentMessages'][0]['payload']['richContent'][0],
-                        ]
+            // Generate invoice
+            $invoiceService->generate($bill, $fileName);
 
-                        ]
-                    ]
-                ],
-                'outputContexts' => [
-                    [
-                        'name' => $session . '/contexts/tagihanInvoice_filter',
-                        'lifespanCount' => 1,
-                    ],
-                    [
-                        'name' => $session . '/contexts/tagihanInvoice_context',
-                        'lifespanCount' => 1,
-                    ]
-                ]
+            Storage::disk('invoices')->download($fileName);
 
+            $redirectWeb[] = [
+                "redirect_url" => $url . "/download-invoice/" . $fileName
             ];
         }
 
-        $bill = $bills->first();
-
-        $fileName = 'struk_' . $bill->id . '.pdf';
-
-        // Generate invoice
-        $invoiceService->generate($bill, $fileName);
-
-        Storage::disk('invoices')->download($fileName);
+        $listTagihan = $this->payloadList($listText, null, 'forwardWeb', $redirectWeb);
 
         return [
                 'fulfillmentMessages' => [
                     [
                         'payload' => [
-                            "richContent"=> [
+                            'richContent' => [
                                 [
-                                    [
-                                        "text"=> "Download Invoice",
-                                        "icon"=> [
-                                            "type"=> "chevron_right",
-                                            "color"=> "#d3259fff"
-                                        ],
-                                        "type"=> "button",
-                                        "link"=> route('invoices.download', $fileName)
-                                    ]
+                                    ...$listTagihan
+                                ],
+                                [
+                                        $this->payloadDescription(null, ["Berikut invoice sesuai dengan yang anda minta, Silahkan klik untuk mendownload invoice.", "Selain itu apakah ada invoice lain yang ingin anda cek ?"]),
                                 ]
                             ]
+
                         ]
                     ]
                 ]
-        ];
+            ];
     }
 
 
@@ -505,7 +477,7 @@ class DialogflowHandler extends Controller
                         ]
                     ]
                 ],
-                'outputContexts' => $this->payloadContext(["bayarTagihan"], $session)['outputContexts']
+                'outputContexts' => []
             ];
         }
         $nonEmptyParams = array_filter($parameters);
@@ -525,7 +497,7 @@ class DialogflowHandler extends Controller
                         ]
                     ]
                 ],
-                'outputContexts' => $this->payloadContext(["bayarTagihan_filter", "bayarTagihan_context"], $session)['outputContexts']
+                'outputContexts' => $this->payloadContext(["bayartagihan_filter", "bayartagihan_context"], $session)['outputContexts']
             ];
         }
     }
@@ -553,7 +525,7 @@ class DialogflowHandler extends Controller
                         ]
                     ]
                 ],
-                'outputContexts' => $this->payloadContext([""], $session)['outputContexts']
+                'outputContexts' => []
             ];
         }
 
@@ -635,6 +607,10 @@ class DialogflowHandler extends Controller
         // Filter parameter opsional (custom, jika ada logika khusus)
         if (!empty($parameters['parameterOpsional'])) {
             // Tambahkan logika sesuai kebutuhan
+        }
+
+        if (!empty($params['status'])) {
+            $query->where('status_pembayaran', 'belum_lunas');
         }
 
         $bills = $query->get();
@@ -840,32 +816,11 @@ class DialogflowHandler extends Controller
      *               FUNGSI CEK LIHAT KELUHAN
      * ======================================================== */
 
-    protected function handleComplaintList(array $parameters, string $session)
+    protected function handleComplaintList($queryText, array $parameters, string $session)
     {
         if ($this->isAnonymous && $this->userId === null) {
             return $this->createLoginRequiredResponse('cek keluhan');
         }
-
-        // $isKeluhanEmpty = Tiket::where('user_id', $this->userId)
-        //                     ->where('status', 'menunggu')->orWhere('status', 'proses')
-        //                     ->doesntExist();
-
-        // if ($isKeluhanEmpty) {
-        //     return [
-        //         'fulfillmentMessages' => [
-        //             [
-        //                 'payload' => [
-        //                     'richContent' => [
-        //                         [
-        //                             $this->payloadDescription(null, ["Saya sudah periksa daftar keluhan, ternyata anda tidak punya keluhan yang berjalan saat ini, Apakah anda ingin membuat keluhan baru ?"])
-        //                         ],
-        //                     ],
-        //                 ]
-        //             ]
-        //         ],
-        //         $this->payloadContext([''],$session)
-        //     ];
-        // }
 
         $nonEmptyParams = array_filter($parameters);
 
@@ -891,7 +846,7 @@ class DialogflowHandler extends Controller
     }
 
 
-    protected function handleComplaintListFilter(array $parameters, string $session)
+    protected function handleComplaintListFilter($queryText, array $parameters, string $session)
     {
         if ($this->isAnonymous) {
             return $this->createLoginRequiredResponse('cek keluhan');
@@ -899,26 +854,35 @@ class DialogflowHandler extends Controller
 
         $userId = $this->userId;
 
-        $isKeluhanEmpty = Tiket::where('user_id', $this->userId)
-                            ->where('status', 'menunggu')->orWhere('status', 'proses')
-                            ->doesntExist();
+        if(!empty($parameters['cancelIntent'])) {
+            return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            'richContent' => [
+                                [
+                                        $this->payloadDescription(null, ["Pengecekan keluhan dibatalkan, apakah ada lagi yang bisa saya bantu ? "]),
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'outputContexts' => []
+            ];
+        }
 
-        // if ($isKeluhanEmpty) {
-        //     return [
-        //         'fulfillmentMessages' => [
-        //             [
-        //                 'payload' => [
-        //                     'richContent' => [
-        //                         [
-        //                             $this->payloadDescription(null, ["Saya sudah periksa daftar keluhan, ternyata anda tidak punya keluhan yang berjalan saat ini, Apakah anda ingin membuat keluhan baru ?"])
-        //                         ],
-        //                     ],
-        //                 ]
-        //             ]
-        //         ],
-        //         $this->payloadContext(['buatKeluhan'],$session)
-        //     ];
-        // }
+        $filledParams = array_filter($parameters, function ($value) {
+            return !empty($value);
+        });
+
+        if(count($filledParams) === 0) {
+            $response =  [
+                'followupEventInput' => $this->payloadEventTrigger("cekkeluhan_filter-nama", ['judul_tiket' => $queryText]),
+                'outputContexts' => $this->payloadContext(["CekKeluhan_filter-followup"], $session)['outputContexts']
+            ];
+
+            return $response;
+        }
 
         // $userId = 10;
 
@@ -927,7 +891,17 @@ class DialogflowHandler extends Controller
 
         // Filter berdasarkan judul
         if (!empty($parameters['judul_tiket'])) {
-            $query->where('category', 'like', '%' . $parameters['judul_tiket'][0] . '%');
+
+            $words = explode(" ", strtolower($parameters['judul_tiket']));
+
+            $stopWords = ['saya', 'ingin', 'yang', 'dan', 'tentang', 'itu', 'di', 'ke', 'dengan'];
+            $filteredWords = array_diff($words, $stopWords);
+
+            $query->where(function ($q) use ($filteredWords) {
+                foreach ($filteredWords as $word) {
+                    $q->orWhere('judul', 'like', '%' . $word . '%');
+                }
+            });
         }
 
         // Filter berdasarkan tanggal (sys.date)
@@ -1039,7 +1013,7 @@ class DialogflowHandler extends Controller
         $url = rtrim(env('APP_STATIC_URL'), '/ ');
 
         foreach ($keluhan as $keluhan) {
-            $judul = $keluhan->category;
+            $judul = $keluhan->judul;
             $status = $keluhan->status;
 
             $listText[] = "Keluhan {$judul} - Status {$status}";
@@ -1060,7 +1034,7 @@ class DialogflowHandler extends Controller
                                     ...$listKeluhan
                                 ],
                                 [
-                                        $this->payloadDescription(null, ["Berikut saya tampilkan keluhan sesuai dengan yang anda minta, Silahkan klik keluhan jika ingin melihat detail selengkapnya.", "Selain itu apakah ada yang ingin anda lakukan lagi ?"]),
+                                        $this->payloadDescription(null, ["Berikut saya tampilkan keluhan sesuai dengan yang anda minta, Silahkan klik keluhan jika ingin melihat detail selengkapnya.", "Apa ada keluhan yang ingin di cek lagi ?"]),
                                 ]
                             ]
 
@@ -1077,9 +1051,9 @@ class DialogflowHandler extends Controller
     protected function handleBillList($queryText, array $parameters, string $session)
     {
 
-        // if ($this->isAnonymous) {
-        //     return $this->createLoginRequiredResponse('cek tagihan');
-        // }
+        if ($this->isAnonymous) {
+            return $this->createLoginRequiredResponse('cek tagihan');
+        }
 
         $nonEmptyParams = array_filter($parameters);
 
@@ -1116,6 +1090,23 @@ class DialogflowHandler extends Controller
 
         $userId = $this->userId;
         // $userId = 10;
+
+        if(!empty($parameters['cancelIntent'])) {
+            return [
+                'fulfillmentMessages' => [
+                    [
+                        'payload' => [
+                            'richContent' => [
+                                [
+                                        $this->payloadDescription(null, ["Pengecekan tagihan dibatalkan, apakah ada lagi yang bisa saya bantu ? "]),
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'outputContexts' => []
+            ];
+        }
 
         $query = Tagihan::query()->where('user_id', $userId);
 
@@ -1239,6 +1230,16 @@ class DialogflowHandler extends Controller
      *          FUNGSI BANTUAN RESPONSE & SESSION
      * ======================================================== */
 
+    public static function payloadEventTrigger(string $eventName, array $eventParameter): array
+    {
+        return [
+            'name' => $eventName,  // nama event di Dialogflow
+            'languageCode' => 'id',        // sesuaikan bahasa agent-mu
+            'parameters' => [
+                ...$eventParameter
+            ]
+        ];
+    }
     public static function payloadDescription(string $title = null, array $textLines = null): array
     {
         return [
