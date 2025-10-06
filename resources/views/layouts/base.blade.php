@@ -176,8 +176,9 @@
     intent="WELCOME"
     chat-title="{{ auth()->check() ? auth()->user()->name : 'Anonymous' }}"
     agent-id="76064ace-fcb9-4d65-9eb2-1e86f7c4ff57"
-     session-id="{{ auth()->check() ? 'user-'.auth()->id() : 'guest-'.session()->getId() }}"
+    session-id="{{ auth()->check() ? 'user-'.auth()->id() : 'guest-'.session()->getId() }}"
     language-code="en"
+    user-id="CUSTOM_SESSION_ID"
     ></df-messenger>
 </body>
 
@@ -275,6 +276,8 @@
         });
     });
 
+
+
     let closedBySubmit = false; // deklarasi di global scope
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -290,12 +293,30 @@
 
                 const dfMessenger = document.querySelector('df-messenger');
                 if (dfMessenger) {
+                    const options = [
+                                    'Buat akun',
+                                    'Buat keluhan',
+                                    'Bayar tagihan',
+                                    'Cek keluhan',
+                                    'Cek tagihan',
+                                    'Hubungi CS',
+                                    'Download Invoice'
+                                ];
                     const payload = [
                         {
                             "type": "description",
                             "text": ["Anda telah membatalkan pembuatan keluhan. Ada lagi yang bisa saya bantu ?"]
+                        },
+                        {
+                            "type" : "chips",
+                            options: options.map(text => ({ text }))
                         }
                     ];
+
+                     const event = new CustomEvent('df-messenger-request-event', {
+                        detail: { eventName: 'buatkeluhan_final' } // event di Dialogflow
+                    });
+                    dfMessenger.dispatchEvent(event);
                     dfMessenger.renderCustomCard(payload);
                 }
             });
@@ -364,6 +385,7 @@
                 },
             ];
             dfMessenger.renderCustomCard(payload);
+            dfMessenger.sendEvent({ name: 'buatakun_final' });
         });
     });
 
